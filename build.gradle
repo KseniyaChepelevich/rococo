@@ -1,0 +1,64 @@
+plugins {
+    id 'java'
+    // Замените 4.0.2 на 3.4.2 (самая актуальная стабильная на данный момент)
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.springframework.boot' version '3.4.2' apply false
+}
+
+wrapper {
+    gradleVersion = '9.2.1'
+}
+
+allprojects {
+    apply plugin: 'java'
+    apply plugin: 'io.spring.dependency-management'
+
+    repositories {
+        mavenCentral()
+    }
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+    }
+}
+
+subprojects {
+    // 1. Версии
+    ext {
+        lombokVersion = '1.18.36' // 1.18.44 пока может быть нестабильна, 36 — проверенная
+        mysqlDriverVersion = '8.0.33'
+        flywayVersion = '10.20.0'
+    }
+
+    // 2. Управление версиями Spring
+    dependencyManagement {
+        imports {
+            // Здесь тоже меняем 4.0.2 на 3.4.2
+            mavenBom "org.springframework.boot:spring-boot-dependencies:3.4.2"
+        }
+    }
+
+    // 3. Общие зависимости для всех модулей
+    dependencies {
+        // Подключаем Lombok сразу везде (для Gradle 9 обязательно оба пункта)
+        compileOnly "org.projectlombok:lombok:${lombokVersion}"
+        annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+        testCompileOnly "org.projectlombok:lombok:${lombokVersion}"
+        testAnnotationProcessor "org.projectlombok:lombok:${lombokVersion}"
+
+        // JUnit 5 (Jupiter) — одной строки достаточно, версию подтянет BOM от Spring
+        testImplementation 'org.junit.jupiter:junit-jupiter'
+    }
+
+    test {
+        useJUnitPlatform() // Обязательно для работы JUnit 5
+    }
+}
+
+// 4. Глобальные настройки компиляции
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs.add('-parameters')
+}
