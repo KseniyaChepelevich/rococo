@@ -14,17 +14,56 @@ public class RegisterPage {
     private final SelenideElement authLink = $(new By.ByXPath("//a[@href='http://localhost:3000' and text()='Войти']"));
     private final SelenideElement buttonSignIn = $(new By.ByXPath("//a[text()='Войти в систему']"));
 
+    private final SelenideElement passShouldBeEqMessage = $(new By.ByXPath("//span[text()='Passwords should be equal']"));
+
+    private final SelenideElement usernameAlreadyExMessage = $(new By.ByXPath("//span[@class='form__error error__username']"));
+
+
     public MainPage registration(String username, String password) {
+        inputUsername(username);
+        inputPassword(password);
+        inputSubmitPassword(password);
+       clickButtonSubmit();
+       clickButtonSignIn();
+        return new MainPage();
+    }
+
+    public RegisterPage inputUsername(String username) {
         usernameInput.setValue(username);
+        return this;
+    }
+
+    public RegisterPage inputPassword(String password) {
         passwordInput.setValue(password);
+        return this;
+    }
+
+    public RegisterPage inputSubmitPassword(String password){
         passwordSubmitInput.setValue(password);
+        return this;
+    }
+    public RegisterPage clickButtonSubmit(){
         buttonFormSubmit.click();
-        buttonSignIn.shouldBe(visible).click();
+        return this;
+    }
+
+    public MainPage clickButtonSignIn(){
+        buttonSignIn.click();
         return new MainPage();
     }
 
     public RegisterPage checkButtonFormSubmit() {
         buttonFormSubmit.shouldBe(visible);
+        return this;
+    }
+
+    public RegisterPage checkVisibilityPassShouldBeEqMessage(){
+        passShouldBeEqMessage.shouldBe(visible);
+        return this;
+    }
+
+    public RegisterPage checkVisibilityUsernameAlreadyExMessage(){
+        usernameAlreadyExMessage.shouldBe(visible);
         return this;
     }
 

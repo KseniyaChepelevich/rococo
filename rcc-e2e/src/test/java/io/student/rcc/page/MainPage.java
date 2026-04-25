@@ -20,7 +20,7 @@ public class MainPage {
     private final SelenideElement avatar = $("figure[class*='avatar']");
 
 
-    public MainPage checkPageContent() {
+    public MainPage checkMainPageContent() {
         mainNavigationArtistNavigation.shouldBe(visible);
         mainNavigationMuseumNavigation.shouldBe(visible);
         mainNavigationPaintingNavigation.shouldBe(visible);
@@ -46,5 +46,10 @@ public class MainPage {
     public MuseumPage clickContentNavigationMuseum() {
         mainNavigationMuseumNavigation.click();
         return new MuseumPage();
+    }
+
+    public MainPage checkLoginVerification() {
+        avatar.shouldBe(visible);
+        return this;
     }
 }

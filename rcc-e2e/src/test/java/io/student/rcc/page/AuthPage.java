@@ -12,20 +12,49 @@ public class AuthPage {
     private final SelenideElement buttonFormSubmit = $(new By.ByXPath("//button[@class='form__submit']"));
     private final SelenideElement registerLink = $(new By.ByXPath("//a[@href='/register']"));
 
+    private final SelenideElement errorLogin = $(new By.ByXPath("//p[@class='form__error login__error']"));
+
     public RegisterPage clickRegisterLink() {
         registerLink.click();
         return new RegisterPage();
     }
 
     public MainPage authentication(String username, String password) {
+        inputUsername(username);
+        inputPassword(password);
+        clickButtonFormSubmit();
+        return new MainPage();
+    }
+
+    public AuthPage incorrectAuthentication(String username, String password) {
+        inputUsername(username);
+        inputPassword(password);
+        clickButtonFormSubmit();
+        return this;
+    }
+
+    public AuthPage inputUsername(String username) {
         usernameInput.setValue(username);
-        passwordInput.setValue(password);
+        return this;
+    }
+
+    public AuthPage inputPassword(String pass) {
+        passwordInput.setValue(pass);
+        return this;
+    }
+
+    public MainPage clickButtonFormSubmit() {
         buttonFormSubmit.click();
         return new MainPage();
     }
 
-    public AuthPage checkButtonSubmit(){
+    public AuthPage checkButtonSubmit() {
         buttonFormSubmit.shouldBe(visible);
+        return this;
+    }
+
+    public AuthPage checkErrorLogin(){
+        errorLogin.shouldBe(visible);
         return this;
     }
 
