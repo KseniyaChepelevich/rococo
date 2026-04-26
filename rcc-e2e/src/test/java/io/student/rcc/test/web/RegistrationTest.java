@@ -64,17 +64,12 @@ public class RegistrationTest {
     }
 
 
-    @User(username = "Enny", firstname = "Anna", lastname = "Petrovna", avatar = "")
+    @User
     @Test
-    void mainPageShouldBeDisplayedAfterSuccessLogin(UserJson userJson) {
-        String pass = generateRandomPassword();
-
+    void mainPageShouldBeDisplayedAfterSuccessLogin(UserJson user) {
         Selenide.open(CFG.frontUrl(), MainPage.class)
                 .clickButtonSignIn()
-                .clickRegisterLink()
-                .registration("Enny", pass)
-                .clickButtonSignIn()
-                .authentication("Enny", pass)
+                .authentication(user.username(), user.password())
                 .checkMainPageContent()
                 .checkLoginVerification();
 

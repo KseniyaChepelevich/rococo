@@ -13,6 +13,7 @@ import java.util.UUID;
 public class UserExtension implements BeforeEachCallback, ParameterResolver {
 public static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(UserExtension.class);
 private final UserClient userClient = new UserDBClient();
+private final static String DEFAULT_PASSWORD = "4321";
 
     @Override
     public void beforeEach(ExtensionContext context) throws Exception {
@@ -21,16 +22,19 @@ private final UserClient userClient = new UserDBClient();
                 User.class
         ).ifPresent(
                 anno -> {
-                    UserJson userJson = new UserJson(
+                    UserJson user = new UserJson(
                             UUID.randomUUID(),
                             generateRandomLogin(),
                             generateFirstname(),
                             generateLastname(),
-                            null
+                            null,
+                            DEFAULT_PASSWORD
                     );
-                    UserJson createUser = userClient.createUser(userJson);
+
                     context.getStore(NAMESPACE)
-                            .put(context.getUniqueId(), createUser);
+                            .put(context.getUniqueId(), userClient.createUser(user.username(),DEFAULT_PASSWORD));
+
+
                 }
         );
 

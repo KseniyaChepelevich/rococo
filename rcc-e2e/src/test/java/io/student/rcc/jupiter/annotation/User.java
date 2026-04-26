@@ -13,8 +13,6 @@ import java.util.UUID;
         @Target(ElementType.METHOD)
 @ExtendWith(UserExtension.class)
 public @interface User {
-    String username();
-    String firstname();
-    String lastname();
-    String avatar();
+    String password() default "1234";
+    boolean enabled() default true;
 }

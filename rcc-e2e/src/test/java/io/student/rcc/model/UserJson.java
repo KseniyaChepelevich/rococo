@@ -13,7 +13,8 @@ public record UserJson(@JsonProperty("id")
                        @JsonProperty("surname")
                        String lastname,
                        @JsonProperty("avatar")
-                       String avatar
+                       String avatar,
+                       String password
 ) {
 
 
