@@ -1,6 +1,6 @@
 package io.student.rcc.model;
 
-import io.qameta.allure.internal.shadowed.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.UUID;
 
