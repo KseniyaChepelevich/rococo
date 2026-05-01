@@ -3,6 +3,7 @@ package io.student.rcc.page;
 import com.codeborne.selenide.SelenideElement;
 import org.openqa.selenium.By;
 
+import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 
@@ -13,6 +14,7 @@ public class AuthPage {
     private final SelenideElement registerLink = $(new By.ByXPath("//a[@href='/register']"));
 
     private final SelenideElement errorLogin = $(new By.ByXPath("//p[@class='form__error login__error']"));
+
 
     public RegisterPage clickRegisterLink() {
         registerLink.click();
@@ -54,7 +56,8 @@ public class AuthPage {
     }
 
     public AuthPage checkErrorLogin(){
-        errorLogin.shouldBe(visible);
+        errorLogin.shouldBe(visible)
+                .shouldHave(text("Неверные учетные данные пользователя"));
         return this;
     }
 

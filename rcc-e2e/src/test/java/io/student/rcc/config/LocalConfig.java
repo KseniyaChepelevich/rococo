@@ -9,17 +9,7 @@ enum LocalConfig implements Config{
     }
 
     @Override
-    public String apiUrl() {
-        return "http://localhost:8080";
-    }
-
-    @Override
-    public String authUrl() {
-        return "http://localhost:9000";
-    }
-
-    @Override
-    public String apiJdbcUrl() {
+    public String authJdbcUrl() {
         return "jdbc:mysql://localhost:3306/rococo-api?serverTimezone=UTC&createDatabaseIfNotExist=true";
     }
 

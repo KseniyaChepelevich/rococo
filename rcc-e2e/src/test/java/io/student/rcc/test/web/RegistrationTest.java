@@ -26,21 +26,16 @@ public class RegistrationTest {
                 .checkMainPageContent();
     }
 
+    @User
     @Test
-    void shouldNotRegisterUserWithExistingUsername() {
-        String username = generateRandomLogin();
-        String pass = generateRandomPassword();
+    void shouldNotRegisterUserWithExistingUsername(UserJson user) {
 
         Selenide.open(CFG.frontUrl(), MainPage.class)
                 .clickButtonSignIn()
                 .clickRegisterLink()
-                .registration(username, pass)
-
-                .clickButtonSignIn()
-                .clickRegisterLink()
-                .inputUsername(username)
-                .inputPassword(pass)
-                .inputSubmitPassword(pass)
+                .inputUsername(user.username())
+                .inputPassword(user.password())
+                .inputSubmitPassword(user.password())
                 .clickButtonSubmit()
                 .checkVisibilityUsernameAlreadyExMessage();
 

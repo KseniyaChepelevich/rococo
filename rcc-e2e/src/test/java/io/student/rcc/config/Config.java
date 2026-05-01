@@ -7,9 +7,7 @@ public interface Config {
     }
 
     String frontUrl();
-    String apiUrl();
-    String authUrl();
-    String apiJdbcUrl();
+    String authJdbcUrl();
     String dbUsername();
     String dbPassword();
 }

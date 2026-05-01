@@ -14,7 +14,7 @@ public class RegisterPage {
     private final SelenideElement authLink = $(new By.ByXPath("//a[@href='http://localhost:3000' and text()='Войти']"));
     private final SelenideElement buttonSignIn = $(new By.ByXPath("//a[text()='Войти в систему']"));
 
-    private final SelenideElement passShouldBeEqMessage = $(new By.ByXPath("//span[text()='Passwords should be equal']"));
+    private final SelenideElement passwordsShouldBeEqualMessage = $(new By.ByXPath("//span[text()='Passwords should be equal']"));
 
     private final SelenideElement usernameAlreadyExMessage = $(new By.ByXPath("//span[@class='form__error error__username']"));
 
@@ -58,7 +58,7 @@ public class RegisterPage {
     }
 
     public RegisterPage checkVisibilityPassShouldBeEqMessage(){
-        passShouldBeEqMessage.shouldBe(visible);
+        passwordsShouldBeEqualMessage.shouldBe(visible);
         return this;
     }
 

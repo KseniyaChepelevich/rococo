@@ -1,6 +1,7 @@
 package io.student.rcc.model;
 
-import io.qameta.allure.internal.shadowed.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 
 import java.util.UUID;
 
@@ -10,7 +11,7 @@ public record UserJson(@JsonProperty("id")
                        String username,
                        @JsonProperty("firstname")
                        String firstname,
-                       @JsonProperty("surname")
+                       @JsonProperty("lastname")
                        String lastname,
                        @JsonProperty("avatar")
                        String avatar,
