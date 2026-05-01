@@ -9,9 +9,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-        @Target(ElementType.METHOD)
+@Target(ElementType.METHOD)
 @ExtendWith(UserExtension.class)
 public @interface User {
     String password() default "1234";
+
     boolean enabled() default true;
 }

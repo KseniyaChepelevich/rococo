@@ -2,8 +2,8 @@ package io.student.rcc.jupiter.extension;
 
 import io.student.rcc.jupiter.annotation.User;
 import io.student.rcc.model.UserJson;
-import io.student.rcc.service.UserClient;
-import io.student.rcc.service.UserDBClient;
+import io.student.rcc.service.UsersClient;
+import io.student.rcc.service.UsersDBClient;
 import org.junit.jupiter.api.extension.*;
 import org.junit.platform.commons.support.AnnotationSupport;
 
@@ -11,9 +11,9 @@ import static io.student.rcc.utils.DataGenerator.*;
 
 import java.util.UUID;
 
-public class UserExtension implements BeforeEachCallback, ParameterResolver {
+public class UserExtension implements BeforeEachCallback, ParameterResolver, AfterEachCallback {
     public static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(UserExtension.class);
-    private final UserClient userClient = new UserDBClient();
+    private final UsersClient userClient = new UsersDBClient();
 
     @Override
     public void beforeEach(ExtensionContext context) throws Exception {
@@ -28,7 +28,8 @@ public class UserExtension implements BeforeEachCallback, ParameterResolver {
                             generateFirstname(),
                             generateLastname(),
                             null,
-                            anno.password()
+                            anno.password(),
+                            anno.enabled()
                     );
 
                     context.getStore(NAMESPACE)
@@ -50,4 +51,26 @@ public class UserExtension implements BeforeEachCallback, ParameterResolver {
         return extensionContext.getStore(NAMESPACE)
                 .get(extensionContext.getUniqueId(), UserJson.class);
     }
+
+
+    @Override
+    public void afterEach(ExtensionContext context) throws Exception {
+        // 1. Удаление данных из БД
+        UserJson user = context.getStore(NAMESPACE)
+                .get(context.getUniqueId(), UserJson.class);
+
+        if (user != null) {
+            // Предполагается, что вы добавите этот метод в UsersClient
+            userClient.deleteUser(user);
+        }
+
+        // 2. Сброс сессии браузера
+        // Если используете Selenide:
+        // com.codeborne.selenide.Selenide.clearBrowserCookies();
+        // com.codeborne.selenide.Selenide.clearBrowserLocalStorage();
+
+        // Если используете чистый Selenium (нужно достать драйвер):
+        // driver.manage().deleteAllCookies();
+    }
+
 }

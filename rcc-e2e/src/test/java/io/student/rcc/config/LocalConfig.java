@@ -1,6 +1,6 @@
 package io.student.rcc.config;
 
-enum LocalConfig implements Config{
+enum LocalConfig implements Config {
     INSTANCE;
 
     @Override

@@ -2,7 +2,7 @@ package io.student.rcc.config;
 
 public interface Config {
 
-    static Config getInstance(){
+    static Config getInstance() {
         return LocalConfig.INSTANCE;
     }
 

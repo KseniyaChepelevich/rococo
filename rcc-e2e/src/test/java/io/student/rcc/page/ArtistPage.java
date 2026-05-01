@@ -7,10 +7,10 @@ import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 
 public class ArtistPage {
-    private final SelenideElement addArtistButton = $(new By.ByXPath("//main[@id='page-content']/div/button[text()='Добавить художника']"));
-    private final SelenideElement pageHeader = $(new By.ByXPath("//h2[text()='Художники']"));
-    private final SelenideElement searchInput = $(new By.ByXPath("//input[@type='search']"));
-    private final SelenideElement searchButton = $(new By.ByXPath("//button[@class='btn-icon variant-soft-surface ml-4']"));
+    private final SelenideElement addArtistButton = $("button[class='btn variant-filled-primary ml-4']");
+    private final SelenideElement pageHeader = $("h2[class*='text-3xl']");
+    private final SelenideElement searchInput = $("input[title*='Искать художников'][type='search']");
+    private final SelenideElement searchButton = $("button[class='btn-icon variant-soft-surface ml-4']");
 
     public ArtistPage checkPageContent() {
         pageHeader.shouldBe(visible);

@@ -8,12 +8,12 @@ import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 
 public class AuthPage {
-    private final SelenideElement usernameInput = $(new By.ByXPath("//input[@name='username']"));
-    private final SelenideElement passwordInput = $(new By.ByXPath("//input[@name='password']"));
-    private final SelenideElement buttonFormSubmit = $(new By.ByXPath("//button[@class='form__submit']"));
-    private final SelenideElement registerLink = $(new By.ByXPath("//a[@href='/register']"));
+    private final SelenideElement usernameInput = $("input[name='username']");
+    private final SelenideElement passwordInput = $("input[name='password']");
+    private final SelenideElement buttonFormSubmit = $("button[class='form__submit']");
+    private final SelenideElement registerLink = $("a[href='/register']");
 
-    private final SelenideElement errorLogin = $(new By.ByXPath("//p[@class='form__error login__error']"));
+    private final SelenideElement errorLogin = $("p[class='form__error login__error']");
 
 
     public RegisterPage clickRegisterLink() {
@@ -55,7 +55,7 @@ public class AuthPage {
         return this;
     }
 
-    public AuthPage checkErrorLogin(){
+    public AuthPage checkErrorLogin() {
         errorLogin.shouldBe(visible)
                 .shouldHave(text("Неверные учетные данные пользователя"));
         return this;

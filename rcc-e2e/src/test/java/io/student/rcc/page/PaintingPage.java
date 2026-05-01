@@ -7,10 +7,10 @@ import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 
 public class PaintingPage {
-    private final SelenideElement addPaintingButton = $(new By.ByXPath("//main[@id='page-content']/div/button[text()='Добавить картину']"));
-    private final SelenideElement pageHeader = $(new By.ByXPath("//h2[text()='Картины']"));
-    private final SelenideElement searchInput = $(new By.ByXPath("//input[@type='search']"));
-    private final SelenideElement searchButton = $(new By.ByXPath("//button[@class='btn-icon variant-soft-surface ml-4']"));
+    private final SelenideElement addPaintingButton = $("button[class='btn variant-filled-primary ml-4']");
+    private final SelenideElement pageHeader = $("h2[class*='text-3xl']");
+    private final SelenideElement searchInput = $("input[title*='Искать картины'][type='search']");
+    private final SelenideElement searchButton = $("button[class='btn-icon variant-soft-surface ml-4']");
 
     public PaintingPage checkPageContent() {
         pageHeader.shouldBe(visible);

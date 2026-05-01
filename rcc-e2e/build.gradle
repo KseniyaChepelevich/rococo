@@ -31,7 +31,7 @@ configurations.configureEach {
 dependencies {
     // WEB
     testImplementation "com.codeborne:selenide:${selenideVersion}"
-
+    implementation "org.springframework:spring-webmvc:6.2.2"
     // Allure
     testImplementation platform("io.qameta.allure:allure-bom:$allureVersion")
     testImplementation "io.qameta.allure:allure-junit5"
