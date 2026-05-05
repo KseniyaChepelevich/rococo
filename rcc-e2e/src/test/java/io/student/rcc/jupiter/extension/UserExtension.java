@@ -4,7 +4,12 @@ import io.student.rcc.jupiter.annotation.User;
 import io.student.rcc.model.UserJson;
 import io.student.rcc.service.UsersClient;
 import io.student.rcc.service.UsersDBClient;
-import org.junit.jupiter.api.extension.*;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.ParameterContext;
+import org.junit.jupiter.api.extension.ParameterResolutionException;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.ParameterResolver;
 import org.junit.platform.commons.support.AnnotationSupport;
 
 import static io.student.rcc.utils.DataGenerator.*;
