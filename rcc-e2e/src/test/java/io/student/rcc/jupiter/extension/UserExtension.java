@@ -63,14 +63,6 @@ public class UserExtension implements BeforeEachCallback, ParameterResolver, Aft
             // Предполагается, что вы добавите этот метод в UsersClient
             userClient.deleteUser(user);
         }
-
-        // 2. Сброс сессии браузера
-        // Если используете Selenide:
-        // com.codeborne.selenide.Selenide.clearBrowserCookies();
-        // com.codeborne.selenide.Selenide.clearBrowserLocalStorage();
-
-        // Если используете чистый Selenium (нужно достать драйвер):
-        // driver.manage().deleteAllCookies();
     }
 
 }
