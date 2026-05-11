@@ -3,7 +3,7 @@ package io.student.rcc.jupiter.extension;
 import io.student.rcc.jupiter.annotation.User;
 import io.student.rcc.model.UserJson;
 import io.student.rcc.service.UsersClient;
-import io.student.rcc.service.UsersDBClient;
+import io.student.rcc.service.UsersDbClient;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ParameterContext;
@@ -18,10 +18,10 @@ import java.util.UUID;
 
 public class UserExtension implements BeforeEachCallback, ParameterResolver, AfterEachCallback {
     public static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(UserExtension.class);
-    private final UsersClient userClient = new UsersDBClient();
+    private final UsersClient userClient = new UsersDbClient();
 
     @Override
-    public void beforeEach(ExtensionContext context) throws Exception {
+    public void beforeEach(ExtensionContext context) {
         AnnotationSupport.findAnnotation(
                 context.getRequiredTestMethod(),
                 User.class
@@ -59,13 +59,11 @@ public class UserExtension implements BeforeEachCallback, ParameterResolver, Aft
 
 
     @Override
-    public void afterEach(ExtensionContext context) throws Exception {
-        // 1. Удаление данных из БД
+    public void afterEach(ExtensionContext context) {
         UserJson user = context.getStore(NAMESPACE)
                 .get(context.getUniqueId(), UserJson.class);
 
         if (user != null) {
-            // Предполагается, что вы добавите этот метод в UsersClient
             userClient.deleteUser(user);
         }
     }

@@ -16,7 +16,7 @@ public record UserJson(@JsonProperty("id")
                        @JsonProperty("avatar")
                        String avatar,
                        String password,
-                       Boolean enabled
+                       boolean enabled
 ) {
 
 

@@ -4,19 +4,14 @@ import io.student.rcc.config.Config;
 import io.student.rcc.model.UserJson;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.SingleConnectionDataSource;
-import org.springframework.jdbc.support.GeneratedKeyHolder;
-import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.sql.PreparedStatement;
-import java.sql.Statement;
 import java.util.UUID;
 
-import static io.student.rcc.utils.DataGenerator.*;
 
-
-public class UsersDBClient implements UsersClient {
+public class UsersDbClient implements UsersClient {
     private static final Config CFG = Config.getInstance();
     private final PasswordEncoder passwordEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
 
@@ -83,7 +78,5 @@ public class UsersDBClient implements UsersClient {
                 userJson.username()
         );
 
-        com.codeborne.selenide.Selenide.clearBrowserCookies();
-        com.codeborne.selenide.Selenide.clearBrowserLocalStorage();
     }
 }
