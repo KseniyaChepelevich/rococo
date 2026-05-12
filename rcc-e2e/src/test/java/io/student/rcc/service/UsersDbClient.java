@@ -13,18 +13,18 @@ import java.util.UUID;
 
 public class UsersDbClient implements UsersClient {
     private static final Config CFG = Config.getInstance();
+    private final JdbcTemplate jdbcTemplate = new JdbcTemplate(
+            new SingleConnectionDataSource(
+                    CFG.authJdbcUrl(),
+                    CFG.dbUsername(),
+                    CFG.dbPassword(),
+                    true
+            )
+    );
     private final PasswordEncoder passwordEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
 
     @Override
     public UserJson createUser(UserJson userJson) {
-        final JdbcTemplate jdbcTemplate = new JdbcTemplate(
-                new SingleConnectionDataSource(
-                        CFG.authJdbcUrl(),
-                        CFG.dbUsername(),
-                        CFG.dbPassword(),
-                        false
-                )
-        );
         final UUID userId = UUID.randomUUID();
         jdbcTemplate.update(
                 con -> {
@@ -57,19 +57,10 @@ public class UsersDbClient implements UsersClient {
 
     @Override
     public void deleteUser(UserJson userJson) {
-        final JdbcTemplate jdbcTemplate = new JdbcTemplate(
-                new SingleConnectionDataSource(
-                        CFG.authJdbcUrl(),
-                        CFG.dbUsername(),
-                        CFG.dbPassword(),
-                        false
-                )
-        );
         jdbcTemplate.update(
                 "DELETE FROM `rococo-auth`.`authority` WHERE user_id = (SELECT id FROM `rococo-auth`.`user` WHERE username = ?)",
                 userJson.username()
         );
-
         jdbcTemplate.update(
                 """
                            DELETE FROM `rococo-auth`.`user`
@@ -77,6 +68,5 @@ public class UsersDbClient implements UsersClient {
                         """,
                 userJson.username()
         );
-
     }
 }

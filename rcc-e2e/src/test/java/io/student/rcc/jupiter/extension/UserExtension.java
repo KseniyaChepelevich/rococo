@@ -12,9 +12,9 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterResolver;
 import org.junit.platform.commons.support.AnnotationSupport;
 
-import static io.student.rcc.utils.DataGenerator.*;
-
-import java.util.UUID;
+import static io.student.rcc.utils.DataGenerator.generateRandomLogin;
+import static io.student.rcc.utils.DataGenerator.generateFirstname;
+import static io.student.rcc.utils.DataGenerator.generateLastname;
 
 public class UserExtension implements BeforeEachCallback, ParameterResolver, AfterEachCallback {
     public static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(UserExtension.class);
@@ -28,7 +28,7 @@ public class UserExtension implements BeforeEachCallback, ParameterResolver, Aft
         ).ifPresent(
                 anno -> {
                     UserJson user = new UserJson(
-                            UUID.randomUUID(),
+                            null,
                             generateRandomLogin(),
                             generateFirstname(),
                             generateLastname(),
@@ -45,10 +45,9 @@ public class UserExtension implements BeforeEachCallback, ParameterResolver, Aft
     }
 
     @Override
-    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return parameterContext.getParameter()
-                .getType()
-                .isAssignableFrom(UserJson.class);
+    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
+        return UserJson.class.isAssignableFrom(parameterContext.getParameter().getType())
+                && AnnotationSupport.isAnnotated(extensionContext.getRequiredTestMethod(), User.class);
     }
 
     @Override

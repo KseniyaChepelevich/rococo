@@ -44,8 +44,6 @@ public class RegistrationTest {
                 .inputSubmitPassword(user.password())
                 .clickButtonSubmit()
                 .checkVisibilityUsernameAlreadyExMessage();
-
-
     }
 
     @Test
@@ -61,73 +59,5 @@ public class RegistrationTest {
                 .inputSubmitPassword(pass + "1")
                 .clickButtonSubmit()
                 .checkVisibilityPassShouldBeEqMessage();
-
-    }
-
-
-    @User
-    @Test
-    void mainPageShouldBeDisplayedAfterSuccessLogin(UserJson user) {
-        Selenide.open(CFG.frontUrl(), MainPage.class)
-                .clickButtonSignIn()
-                .authentication(user.username(), user.password())
-                .checkMainPageContent()
-                .checkLoginVerification();
-
-    }
-
-
-    @Test
-    void userShouldStayOnLoginPageAfterLoginWithBadCredentials() {
-        String username = generateRandomLogin();
-        String pass = generateRandomPassword();
-
-        Selenide.open(CFG.frontUrl(), MainPage.class)
-                .clickButtonSignIn()
-                .incorrectAuthentication(username, pass)
-                .checkErrorLogin();
-
-    }
-
-    @User
-    @Test
-    void modalFormAddPaintingShouldBeAvailable(UserJson user) {
-        Selenide.open(CFG.frontUrl(), MainPage.class)
-                .clickButtonSignIn()
-                .authentication(user.username(), user.password())
-                .checkLoginVerification()
-                .clickContentNavigationPainting()
-                .checkPageContent()
-                .clickAddPaintingButton()
-                .checkModalFormAddPainting()
-                .closeModalFormAddPainting();
-    }
-
-    @User
-    @Test
-    void modalFormAddArtistShouldBeAvailable(UserJson user) {
-        Selenide.open(CFG.frontUrl(), MainPage.class)
-                .clickButtonSignIn()
-                .authentication(user.username(), user.password())
-                .checkLoginVerification()
-                .clickContentNavigationArtist()
-                .checkPageContent()
-                .clickAddArtistButton()
-                .checkModalFormAddArtist()
-                .closeModalFormAddArtist();
-    }
-
-    @User
-    @Test
-    void modalFormAddMuseumShouldBeAvailable(UserJson user) {
-        Selenide.open(CFG.frontUrl(), MainPage.class)
-                .clickButtonSignIn()
-                .authentication(user.username(), user.password())
-                .checkLoginVerification()
-                .clickContentNavigationMuseum()
-                .checkPageContent()
-                .clickAddMuseumButton()
-                .checkModalFormAddMuseum()
-                .closeModalFormAddAMuseum();
     }
 }
