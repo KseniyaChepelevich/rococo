@@ -31,7 +31,6 @@ configurations.configureEach {
 dependencies {
     // WEB
     testImplementation "com.codeborne:selenide:${selenideVersion}"
-
     // Allure
     testImplementation platform("io.qameta.allure:allure-bom:$allureVersion")
     testImplementation "io.qameta.allure:allure-junit5"
@@ -44,6 +43,7 @@ dependencies {
     // Utils
     testImplementation "com.github.javafaker:javafaker:${fakerVersion}"
     testImplementation "org.yaml:snakeyaml:${snakeYamlVersion}"
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.0'
 
     // DB
     testImplementation "org.springframework:spring-jdbc:${springJdbcVersion}"

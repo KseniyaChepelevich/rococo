@@ -1,0 +1,70 @@
+package io.student.rcc.jupiter.extension;
+
+import io.student.rcc.jupiter.annotation.User;
+import io.student.rcc.model.UserJson;
+import io.student.rcc.service.UsersClient;
+import io.student.rcc.service.UsersDbClient;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.ParameterContext;
+import org.junit.jupiter.api.extension.ParameterResolutionException;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.ParameterResolver;
+import org.junit.platform.commons.support.AnnotationSupport;
+
+import static io.student.rcc.utils.DataGenerator.generateRandomLogin;
+import static io.student.rcc.utils.DataGenerator.generateFirstname;
+import static io.student.rcc.utils.DataGenerator.generateLastname;
+
+public class UserExtension implements BeforeEachCallback, ParameterResolver, AfterEachCallback {
+    public static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(UserExtension.class);
+    private final UsersClient userClient = new UsersDbClient();
+
+    @Override
+    public void beforeEach(ExtensionContext context) {
+        AnnotationSupport.findAnnotation(
+                context.getRequiredTestMethod(),
+                User.class
+        ).ifPresent(
+                anno -> {
+                    UserJson user = new UserJson(
+                            null,
+                            generateRandomLogin(),
+                            generateFirstname(),
+                            generateLastname(),
+                            null,
+                            anno.password(),
+                            anno.enabled()
+                    );
+
+                    context.getStore(NAMESPACE)
+                            .put(context.getUniqueId(), userClient.createUser(user));
+                }
+        );
+
+    }
+
+    @Override
+    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
+        return UserJson.class.isAssignableFrom(parameterContext.getParameter().getType())
+                && AnnotationSupport.isAnnotated(extensionContext.getRequiredTestMethod(), User.class);
+    }
+
+    @Override
+    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
+        return extensionContext.getStore(NAMESPACE)
+                .get(extensionContext.getUniqueId(), UserJson.class);
+    }
+
+
+    @Override
+    public void afterEach(ExtensionContext context) {
+        UserJson user = context.getStore(NAMESPACE)
+                .get(context.getUniqueId(), UserJson.class);
+
+        if (user != null) {
+            userClient.deleteUser(user);
+        }
+    }
+
+}
