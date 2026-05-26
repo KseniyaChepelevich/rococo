@@ -24,7 +24,7 @@ public class CountryController {
   }
 
   @GetMapping()
-  public Page<CountryJson> getAll(@RequestParam(required = false) String title,
+  public Page<CountryJson> getAllCountries(@RequestParam(required = false) String title,
                                   @PageableDefault Pageable pageable) {
     return countryService.all(title, pageable);
   }
