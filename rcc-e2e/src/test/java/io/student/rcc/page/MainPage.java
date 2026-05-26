@@ -16,7 +16,7 @@ public class MainPage {
 
     private final SelenideElement buttonSignIn = $("button[class='btn variant-filled-primary']");
     private final SelenideElement avatar = $("figure[class*='avatar']");
-    HeaderMenuPage headerMenuPage = new HeaderMenuPage();
+    HeaderMenuPage headerMenuPage;
 
 
     public MainPage checkMainPageContent() {
@@ -24,6 +24,9 @@ public class MainPage {
         mainNavigationArtistNavigation.shouldBe(visible);
         mainNavigationMuseumNavigation.shouldBe(visible);
         mainNavigationPaintingNavigation.shouldBe(visible);
+        if (headerMenuPage == null) {
+            headerMenuPage = new HeaderMenuPage();
+        }
         headerMenuPage.checkHeaderMenuPageContent();
         return this;
     }

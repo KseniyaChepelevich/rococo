@@ -3,7 +3,7 @@ package io.student.rcc.test.web;
 import com.codeborne.selenide.Selenide;
 import io.student.rcc.config.Config;
 import io.student.rcc.jupiter.annotation.User;
-import io.student.rcc.model.UserJson;
+import io.student.rcc.model.api.UserJson;
 import io.student.rcc.page.MainPage;
 
 import org.junit.jupiter.api.AfterEach;
@@ -40,8 +40,8 @@ public class RegistrationTest {
                 .clickButtonSignIn()
                 .clickRegisterLink()
                 .inputUsername(user.username())
-                .inputPassword(user.password())
-                .inputSubmitPassword(user.password())
+                .inputPassword("12345")
+                .inputSubmitPassword("12345")
                 .clickButtonSubmit()
                 .checkVisibilityUsernameAlreadyExMessage();
     }

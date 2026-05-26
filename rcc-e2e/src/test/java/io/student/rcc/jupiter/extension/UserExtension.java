@@ -1,46 +1,41 @@
 package io.student.rcc.jupiter.extension;
 
+import io.student.rcc.jupiter.TestData;
 import io.student.rcc.jupiter.annotation.User;
-import io.student.rcc.model.UserJson;
+import io.student.rcc.model.api.UserJson;
 import io.student.rcc.service.UsersClient;
 import io.student.rcc.service.UsersDbClient;
-import org.junit.jupiter.api.extension.AfterEachCallback;
+import io.student.rcc.utils.DataGenerator;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
-import org.junit.jupiter.api.extension.ParameterContext;
-import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ParameterResolver;
+import org.junit.jupiter.api.extension.ParameterContext;
+import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.platform.commons.support.AnnotationSupport;
 
-import static io.student.rcc.utils.DataGenerator.generateRandomLogin;
-import static io.student.rcc.utils.DataGenerator.generateFirstname;
-import static io.student.rcc.utils.DataGenerator.generateLastname;
-
-public class UserExtension implements BeforeEachCallback, ParameterResolver, AfterEachCallback {
+public class UserExtension implements BeforeEachCallback, ParameterResolver {
     public static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(UserExtension.class);
-    private final UsersClient userClient = new UsersDbClient();
+    private UsersClient userClient;
+
 
     @Override
     public void beforeEach(ExtensionContext context) {
+        if (userClient == null) {
+            userClient = new UsersDbClient();
+        }
         AnnotationSupport.findAnnotation(
                 context.getRequiredTestMethod(),
                 User.class
         ).ifPresent(
                 anno -> {
-                    UserJson user = new UserJson(
-                            null,
-                            generateRandomLogin(),
-                            generateFirstname(),
-                            generateLastname(),
-                            null,
-                            anno.password(),
-                            anno.enabled()
-                    );
+                    String username = anno.username().isEmpty()
+                            ? DataGenerator.generateRandomLogin()
+                            : anno.username();
 
-                    context.getStore(NAMESPACE)
-                            .put(context.getUniqueId(), userClient.createUser(user));
-                }
-        );
+                    UserJson user = userClient.createUser(username, anno.password());
+
+                    TestDataExtension.updateContextData(context, testData -> testData.withUser(user, anno.password()));
+                });
 
     }
 
@@ -52,19 +47,18 @@ public class UserExtension implements BeforeEachCallback, ParameterResolver, Aft
 
     @Override
     public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return extensionContext.getStore(NAMESPACE)
-                .get(extensionContext.getUniqueId(), UserJson.class);
+        TestData currentData = extensionContext.getStore(TestDataExtension.NAMESPACE)
+                .get(TestDataExtension.KEY, TestData.class);
+
+        return currentData != null ? currentData.user() : null;
     }
 
+    public static String getCreatedUserPassword(ExtensionContext context) {
+        TestData currentData = context.getStore(TestDataExtension.NAMESPACE)
+                .get(TestDataExtension.KEY, TestData.class);
 
-    @Override
-    public void afterEach(ExtensionContext context) {
-        UserJson user = context.getStore(NAMESPACE)
-                .get(context.getUniqueId(), UserJson.class);
-
-        if (user != null) {
-            userClient.deleteUser(user);
-        }
+        return currentData != null ? currentData.userPassword() : null;
     }
+
 
 }
