@@ -1,72 +1,89 @@
 package io.student.rcc.service;
 
 import io.student.rcc.config.Config;
-import io.student.rcc.model.UserJson;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.SingleConnectionDataSource;
+import io.student.rcc.data.entity.api.UserEntity;
+import io.student.rcc.data.entity.auth.AuthUserEntity;
+import io.student.rcc.data.entity.auth.Authority;
+import io.student.rcc.data.entity.auth.AuthorityEntity;
+import io.student.rcc.data.repository.AuthUserRepository;
+import io.student.rcc.data.repository.UserRepository;
+import io.student.rcc.data.repository.impl.api.user.UserRepositoryHibernate;
+import io.student.rcc.data.repository.impl.auth.AuthUserRepositoryHibernate;
+import io.student.rcc.data.tpl.XaTransactionTemplate;
+import io.student.rcc.model.api.UserJson;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.sql.PreparedStatement;
+import java.util.Arrays;
 import java.util.UUID;
 
 
 public class UsersDbClient implements UsersClient {
     private static final Config CFG = Config.getInstance();
-    private final JdbcTemplate jdbcTemplate = new JdbcTemplate(
-            new SingleConnectionDataSource(
-                    CFG.authJdbcUrl(),
-                    CFG.dbUsername(),
-                    CFG.dbPassword(),
-                    true
-            )
+
+    private static final PasswordEncoder pe = PasswordEncoderFactories.createDelegatingPasswordEncoder();
+
+    private final AuthUserRepository authUserRepositoryH = new AuthUserRepositoryHibernate();
+    private final UserRepository userRepositoryH = new UserRepositoryHibernate();
+
+
+    private final XaTransactionTemplate xaTransactionTemplate = new XaTransactionTemplate(
+            CFG.authJdbcUrl(),
+            CFG.apiJdbcUrl()
     );
-    private final PasswordEncoder passwordEncoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
+
 
     @Override
-    public UserJson createUser(UserJson userJson) {
-        final UUID userId = UUID.randomUUID();
-        jdbcTemplate.update(
-                con -> {
-                    PreparedStatement ps = con.prepareStatement(
-                            """
-                                      INSERT INTO `rococo-auth`.`user`  (id, username, password, enabled, account_non_expired, account_non_locked, credentials_non_expired)
-                                       VALUES (UUID_TO_BIN(?, true), ?, ?, ?, ?, ?, ?)
-                                    """
-                    );
-                    ps.setString(1, userId.toString());
-                    ps.setString(2, userJson.username());
-                    ps.setString(3, passwordEncoder.encode(userJson.password()));
-                    ps.setBoolean(4, userJson.enabled());
-                    ps.setBoolean(5, true);
-                    ps.setBoolean(6, true);
-                    ps.setBoolean(7, true);
-                    return ps;
+    public UserJson createUser(String username, String password) {
+        UUID userId = UUID.randomUUID();
+        String encodedPassword = pe.encode(password);
+
+        return xaTransactionTemplate.execute(() -> {
+                    AuthUserEntity authUserEntity = createAuthUserEntity(userId, username, encodedPassword);
+                    authUserRepositoryH.create(authUserEntity);
+
+                    UserEntity userEntity = createUserEntity(userId, username);
+                    userRepositoryH.create(userEntity);
+                    return new UserJson(userId, username, null, null, null);
                 }
         );
-        return new UserJson(
-                userId,
-                userJson.username(),
-                null,
-                null,
-                null,
-                userJson.password(),
-                userJson.enabled()
-        );
     }
 
-    @Override
-    public void deleteUser(UserJson userJson) {
-        jdbcTemplate.update(
-                "DELETE FROM `rococo-auth`.`authority` WHERE user_id = (SELECT id FROM `rococo-auth`.`user` WHERE username = ?)",
-                userJson.username()
+
+
+    private AuthUserEntity createAuthUserEntity(UUID userId, String username, String password) {
+        AuthUserEntity authUser = new AuthUserEntity();
+        authUser.setId(userId);
+        authUser.setUsername(username);
+        authUser.setPassword(password);
+        authUser.setEnabled(true);
+        authUser.setAccountNonExpired(true);
+        authUser.setAccountNonLocked(true);
+        authUser.setCredentialsNonExpired(true);
+
+        authUser.setAuthorities(
+                Arrays.stream(Authority.values()).map(
+                        authority -> {
+                            AuthorityEntity ae = new AuthorityEntity();
+                            ae.setId(null);
+                            ae.setUser(authUser);
+                            ae.setAuthority(authority);
+                            return ae;
+                        }).toList()
         );
-        jdbcTemplate.update(
-                """
-                           DELETE FROM `rococo-auth`.`user`
-                        WHERE username=?
-                        """,
-                userJson.username()
-        );
+
+        return authUser;
     }
+
+    private UserEntity createUserEntity(UUID userId, String username) {
+        UserEntity user = new UserEntity();
+        user.setId(userId);
+        user.setAvatar(null);
+        user.setFirstname(null);
+        user.setLastname(null);
+        user.setUsername(username);
+        return user;
+    }
+
+
 }

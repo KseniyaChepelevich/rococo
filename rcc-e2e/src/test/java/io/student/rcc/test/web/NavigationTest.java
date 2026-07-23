@@ -3,7 +3,7 @@ package io.student.rcc.test.web;
 import com.codeborne.selenide.Selenide;
 import io.student.rcc.config.Config;
 import io.student.rcc.jupiter.annotation.User;
-import io.student.rcc.model.UserJson;
+import io.student.rcc.model.api.UserJson;
 import io.student.rcc.page.MainPage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +22,7 @@ public class NavigationTest {
     void modalFormAddPaintingShouldBeAvailable(UserJson user) {
         Selenide.open(CFG.frontUrl(), MainPage.class)
                 .clickButtonSignIn()
-                .authentication(user.username(), user.password())
+                .authentication(user.username(), "12345")
                 .checkLoginVerification()
                 .clickContentNavigationPainting()
                 .checkPageContent()
@@ -36,7 +36,7 @@ public class NavigationTest {
     void modalFormAddArtistShouldBeAvailable(UserJson user) {
         Selenide.open(CFG.frontUrl(), MainPage.class)
                 .clickButtonSignIn()
-                .authentication(user.username(), user.password())
+                .authentication(user.username(), "12345")
                 .checkLoginVerification()
                 .clickContentNavigationArtist()
                 .checkPageContent()
@@ -50,7 +50,7 @@ public class NavigationTest {
     void modalFormAddMuseumShouldBeAvailable(UserJson user) {
         Selenide.open(CFG.frontUrl(), MainPage.class)
                 .clickButtonSignIn()
-                .authentication(user.username(), user.password())
+                .authentication(user.username(), "12345")
                 .checkLoginVerification()
                 .clickContentNavigationMuseum()
                 .checkPageContent()

@@ -1,11 +1,14 @@
 package io.student.rcc.service;
 
-import io.student.rcc.model.UserJson;
+import io.student.rcc.model.api.UserJson;
 
 public interface UsersClient {
-    UserJson createUser(UserJson userJson);
 
-    void deleteUser(UserJson userJson);
+
+    UserJson createUser(String username, String password);
+
+
+
 
 
 }
