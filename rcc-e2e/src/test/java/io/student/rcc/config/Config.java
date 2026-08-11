@@ -3,11 +3,15 @@ package io.student.rcc.config;
 public interface Config {
 
     static Config getInstance() {
-        return LocalConfig.INSTANCE;
+
+        return "docker".equals(System.getProperty("test.env"))
+        ? DockerConfig.INSTANCE
+        : LocalConfig.INSTANCE;
     }
 
     String frontUrl();
     String authJdbcUrl();
+    String apiJdbcUrl();
     String dbUsername();
     String dbPassword();
 }

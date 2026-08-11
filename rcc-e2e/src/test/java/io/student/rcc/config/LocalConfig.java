@@ -14,6 +14,11 @@ enum LocalConfig implements Config {
     }
 
     @Override
+    public String apiJdbcUrl() {
+        return "jdbc:mysql://localhost:3306/rococo-api?serverTimezone=UTC&createDatabaseIfNotExist=true";
+    }
+
+    @Override
     public String dbUsername() {
         return "root";
     }

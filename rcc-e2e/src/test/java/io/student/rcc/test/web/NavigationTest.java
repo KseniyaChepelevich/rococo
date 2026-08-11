@@ -3,7 +3,7 @@ package io.student.rcc.test.web;
 import com.codeborne.selenide.Selenide;
 import io.student.rcc.config.Config;
 import io.student.rcc.jupiter.annotation.User;
-import io.student.rcc.model.UserJson;
+import io.student.rcc.model.api.UserJson;
 import io.student.rcc.page.MainPage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -20,11 +20,14 @@ public class NavigationTest {
     @User
     @Test
     void modalFormAddPaintingShouldBeAvailable(UserJson user) {
-        Selenide.open(CFG.frontUrl(), MainPage.class)
-                .clickButtonSignIn()
-                .authentication(user.username(), user.password())
+        MainPage mainPage = Selenide.open(CFG.frontUrl(), MainPage.class);
+        mainPage
+                .checkMainPageContent()
+                .header()
+                .clickEnterButton()
+                .authentication(user.username(), "12345")
                 .checkLoginVerification()
-                .clickContentNavigationPainting()
+                .clickPaintings()
                 .checkPageContent()
                 .clickAddPaintingButton()
                 .checkModalFormAddPainting()
@@ -34,11 +37,14 @@ public class NavigationTest {
     @User
     @Test
     void modalFormAddArtistShouldBeAvailable(UserJson user) {
-        Selenide.open(CFG.frontUrl(), MainPage.class)
-                .clickButtonSignIn()
-                .authentication(user.username(), user.password())
+        MainPage mainPage = Selenide.open(CFG.frontUrl(), MainPage.class);
+        mainPage
+                .checkMainPageContent()
+                .header()
+                .clickEnterButton()
+                .authentication(user.username(), "12345")
                 .checkLoginVerification()
-                .clickContentNavigationArtist()
+                .clickArtists()
                 .checkPageContent()
                 .clickAddArtistButton()
                 .checkModalFormAddArtist()
@@ -48,11 +54,14 @@ public class NavigationTest {
     @User
     @Test
     void modalFormAddMuseumShouldBeAvailable(UserJson user) {
-        Selenide.open(CFG.frontUrl(), MainPage.class)
-                .clickButtonSignIn()
-                .authentication(user.username(), user.password())
+        MainPage mainPage = Selenide.open(CFG.frontUrl(), MainPage.class);
+        mainPage
+                .checkMainPageContent()
+                .header()
+                .clickEnterButton()
+                .authentication(user.username(), "12345")
                 .checkLoginVerification()
-                .clickContentNavigationMuseum()
+                .clickMuseums()
                 .checkPageContent()
                 .clickAddMuseumButton()
                 .checkModalFormAddMuseum()
