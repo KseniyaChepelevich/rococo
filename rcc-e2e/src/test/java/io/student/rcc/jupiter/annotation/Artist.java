@@ -13,6 +13,8 @@ import java.lang.annotation.Target;
 @ExtendWith(ArtistExtension.class)
 public @interface Artist {
     String biography() default "";
+
     String name() default "";
+
     String photo() default "";
 }

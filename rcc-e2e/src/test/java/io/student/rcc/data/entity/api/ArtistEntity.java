@@ -1,19 +1,11 @@
 package io.student.rcc.data.entity.api;
 
-import io.student.rcc.model.api.ArtistJson;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Lob;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.io.Serializable;
-import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.UUID;
 

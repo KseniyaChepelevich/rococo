@@ -1,22 +1,21 @@
 package io.student.rcc.data.mapper;
 
-import io.student.rcc.data.entity.api.ArtistEntity;
 import io.student.rcc.data.entity.auth.AuthUserEntity;
-import io.student.rcc.data.entity.auth.AuthorityEntity;
+import jakarta.annotation.Nonnull;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 
-public class AuthUserEntityRowMapper implements RowMapper<AuthUserEntity>{
+public class AuthUserEntityRowMapper implements RowMapper<AuthUserEntity> {
     public static final AuthUserEntityRowMapper instance = new AuthUserEntityRowMapper();
 
     private AuthUserEntityRowMapper() {
     }
 
     @Override
-    public AuthUserEntity mapRow(ResultSet rs, int rowNum) throws SQLException {
+    public AuthUserEntity mapRow(@Nonnull ResultSet rs, int rowNum) throws SQLException {
         AuthUserEntity result = new AuthUserEntity();
         result.setId(rs.getObject("id", UUID.class));
         result.setUsername(rs.getString("username"));

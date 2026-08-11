@@ -6,6 +6,8 @@ import io.student.rcc.data.entity.auth.Authority;
 import io.student.rcc.data.entity.auth.AuthorityEntity;
 import io.student.rcc.data.mapper.AuthUserEntityRowMapper;
 import io.student.rcc.data.repository.AuthUserRepository;
+import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -15,7 +17,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.*;
 
-import static io.student.rcc.data.tpl.Connections.holder;
+import static io.student.rcc.data.mapper.tpl.Connections.holder;
 
 public class AuthUserRepositoryJdbc implements AuthUserRepository {
 
@@ -23,7 +25,7 @@ public class AuthUserRepositoryJdbc implements AuthUserRepository {
     private static final PasswordEncoder pe = PasswordEncoderFactories.createDelegatingPasswordEncoder();
 
     @Override
-    public AuthUserEntity create(AuthUserEntity user) {
+    public @Nonnull AuthUserEntity create(@Nonnull AuthUserEntity user) {
         try (PreparedStatement userPs = holder(CFG.authJdbcUrl()).connection().prepareStatement(
                 "INSERT INTO `user` (username, password, enabled, account_non_expired, account_non_locked, credentials_non_expired) " +
                         "VALUES (?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
@@ -63,9 +65,8 @@ public class AuthUserRepositoryJdbc implements AuthUserRepository {
     }
 
 
-
     @Override
-    public Optional<AuthUserEntity> findById(UUID id) {
+    public Optional<AuthUserEntity> findById(@Nonnull UUID id) {
         try (PreparedStatement ps = holder(CFG.authJdbcUrl()).connection().prepareStatement(
                 "SELECT a.id as authority_id, authority, u.id, u.username, u.password, " +
                         "u.enabled, u.account_non_expired, u.account_non_locked, u.credentials_non_expired " +
@@ -101,7 +102,7 @@ public class AuthUserRepositoryJdbc implements AuthUserRepository {
     }
 
     @Override
-    public List<AuthUserEntity> findAll() {
+    public @Nonnull List<AuthUserEntity> findAll() {
         Map<UUID, AuthUserEntity> userMap = new LinkedHashMap<>();
         try (PreparedStatement ps = holder(CFG.authJdbcUrl()).connection().prepareStatement(
                 "SELECT a.id as authority_id, authority, u.id, u.username, u.password, " +
@@ -136,7 +137,7 @@ public class AuthUserRepositoryJdbc implements AuthUserRepository {
     }
 
     @Override
-    public Optional<AuthUserEntity> findByUsername(String username) {
+    public Optional<AuthUserEntity> findByUsername(@Nonnull String username) {
         try (PreparedStatement ps = holder(CFG.authJdbcUrl()).connection().prepareStatement(
                 "SELECT a.id as authority_id, authority, u.id, u.username, u.password, " +
                         "u.enabled, u.account_non_expired, u.account_non_locked, u.credentials_non_expired " +
@@ -166,6 +167,27 @@ public class AuthUserRepositoryJdbc implements AuthUserRepository {
             } catch (SQLException ex) {
                 throw new RuntimeException(ex);
             }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void remove(@NonNull AuthUserEntity authUser) {
+        try (PreparedStatement authorityPs = holder(CFG.authJdbcUrl()).connection().prepareStatement(
+                "DELETE FROM \"authority\" WHERE user_id = ?"
+        );
+             PreparedStatement userPs = holder(CFG.authJdbcUrl()).connection().prepareStatement(
+                     "DELETE FROM \"user\" WHERE id = ?"
+             )
+        ) {
+            authorityPs.setObject(1, authUser.getId());
+
+            userPs.setObject(1, authUser.getId());
+            authorityPs.execute();
+            userPs.execute();
+
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

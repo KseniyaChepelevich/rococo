@@ -25,7 +25,7 @@ public class TestDataFactory {
                         ? DataGenerator.generateRandomBiography()
                         : anno.biography(),
                 anno.photo().isEmpty() ? null : anno.photo()
-                );
+        );
     }
 
     public static MuseumJson museum(Museum anno) {
@@ -65,8 +65,6 @@ public class TestDataFactory {
                 museum
         );
     }
-
-
 
 
 }

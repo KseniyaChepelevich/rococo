@@ -7,11 +7,11 @@ import com.codeborne.selenide.logevents.SelenideLogger;
 import io.qameta.allure.Allure;
 import io.qameta.allure.selenide.AllureSelenide;
 import io.student.rcc.config.Config;
-import org.junit.jupiter.api.extension.BeforeEachCallback;
+import jakarta.annotation.Nonnull;
 import org.junit.jupiter.api.extension.AfterEachCallback;
-import org.junit.jupiter.api.extension.TestExecutionExceptionHandler;
-import org.junit.jupiter.api.extension.LifecycleMethodExecutionExceptionHandler;
 import org.junit.jupiter.api.extension.ExtensionContext;
+import org.junit.jupiter.api.extension.LifecycleMethodExecutionExceptionHandler;
+import org.junit.jupiter.api.extension.TestExecutionExceptionHandler;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -22,7 +22,6 @@ import java.util.Map;
 
 public class BrowserExtension implements
         SuiteExtension,
-        BeforeEachCallback,
         AfterEachCallback,
         TestExecutionExceptionHandler,
         LifecycleMethodExecutionExceptionHandler {
@@ -30,7 +29,7 @@ public class BrowserExtension implements
     private static final Config CFG = Config.getInstance();
 
     @Override
-    public void beforeSuite(ExtensionContext context) {
+    public void beforeSuite(@Nonnull ExtensionContext context) {
         Configuration.baseUrl = CFG.frontUrl();
         Configuration.browser = "chrome";
         Configuration.pageLoadStrategy = "eager";
@@ -62,12 +61,9 @@ public class BrowserExtension implements
         }
     }
 
-    @Override
-    public void beforeEach(ExtensionContext context) throws Exception {
-    }
 
     @Override
-    public void afterEach(ExtensionContext context) throws Exception {
+    public void afterEach(@Nonnull ExtensionContext context) throws Exception {
         if (WebDriverRunner.hasWebDriverStarted()) {
             Selenide.clearBrowserCookies();
             Selenide.clearBrowserLocalStorage();
@@ -75,19 +71,19 @@ public class BrowserExtension implements
     }
 
     @Override
-    public void handleTestExecutionException(ExtensionContext context, Throwable throwable) throws Throwable {
+    public void handleTestExecutionException(@Nonnull ExtensionContext context, @Nonnull Throwable throwable) throws Throwable {
         doScreenshot();
         throw throwable;
     }
 
     @Override
-    public void handleBeforeEachMethodExecutionException(ExtensionContext context, Throwable throwable) throws Throwable {
+    public void handleBeforeEachMethodExecutionException(@Nonnull ExtensionContext context, @Nonnull Throwable throwable) throws Throwable {
         doScreenshot();
         throw throwable;
     }
 
     @Override
-    public void handleAfterEachMethodExecutionException(ExtensionContext context, Throwable throwable) throws Throwable {
+    public void handleAfterEachMethodExecutionException(@Nonnull ExtensionContext context, @Nonnull Throwable throwable) throws Throwable {
         doScreenshot();
         throw throwable;
     }

@@ -4,12 +4,9 @@ import io.student.rcc.jupiter.TestData;
 import io.student.rcc.jupiter.annotation.Artist;
 import io.student.rcc.model.api.ArtistJson;
 import io.student.rcc.service.ArtistClient;
-import io.student.rcc.service.ArtistDbClient;
-import org.junit.jupiter.api.extension.BeforeEachCallback;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.ParameterResolver;
-import org.junit.jupiter.api.extension.ParameterContext;
-import org.junit.jupiter.api.extension.ParameterResolutionException;
+import io.student.rcc.service.impl.ArtistDbClient;
+import jakarta.annotation.Nonnull;
+import org.junit.jupiter.api.extension.*;
 import org.junit.platform.commons.support.AnnotationSupport;
 
 import static io.student.rcc.jupiter.factory.TestDataFactory.artist;
@@ -20,7 +17,7 @@ public class ArtistExtension implements BeforeEachCallback, ParameterResolver {
 
 
     @Override
-    public void beforeEach(ExtensionContext context) {
+    public void beforeEach(@Nonnull ExtensionContext context) {
         if (artistClient == null) {
             artistClient = new ArtistDbClient();
         }
@@ -36,12 +33,13 @@ public class ArtistExtension implements BeforeEachCallback, ParameterResolver {
     }
 
     @Override
-    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
+    public boolean supportsParameter(@Nonnull ParameterContext parameterContext, @Nonnull ExtensionContext extensionContext) {
         return parameterContext.getParameter().getType().equals(ArtistJson.class);
     }
 
+    @Nonnull
     @Override
-    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
+    public Object resolveParameter(@Nonnull ParameterContext parameterContext, @Nonnull ExtensionContext extensionContext) throws ParameterResolutionException {
         TestData currentData = extensionContext.getStore(TestDataExtension.NAMESPACE)
                 .get(TestDataExtension.KEY, TestData.class);
 

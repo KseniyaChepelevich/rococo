@@ -1,13 +1,12 @@
 package io.student.rcc.data.repository;
 
 
-
 import io.student.rcc.data.entity.api.ArtistEntity;
 import io.student.rcc.data.entity.api.PaintingEntity;
 import io.student.rcc.data.repository.impl.api.painting.PaintingRepositoryHibernate;
 import io.student.rcc.data.repository.impl.api.painting.PaintingRepositoryJdbc;
 import io.student.rcc.data.repository.impl.api.painting.PaintingRepositorySpringJdbc;
-
+import jakarta.annotation.Nonnull;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,16 +22,21 @@ public interface PaintingRepository {
         };
     }
 
-    PaintingEntity create(PaintingEntity painting);
+    @Nonnull
+    PaintingEntity create(@Nonnull PaintingEntity painting);
 
-    PaintingEntity update(PaintingEntity painting);
+    @Nonnull
+    PaintingEntity update(@Nonnull PaintingEntity painting);
 
-    void remove(PaintingEntity painting);
-    Optional<PaintingEntity> findById(UUID id);
+    void remove(@Nonnull PaintingEntity painting);
 
+    Optional<PaintingEntity> findById(@Nonnull UUID id);
+
+    @Nonnull
     List<PaintingEntity> findAll();
 
-    Optional<PaintingEntity> findByTitle(String title);
+    Optional<PaintingEntity> findByTitle(@Nonnull String title);
 
-    List<PaintingEntity> findByArtist(ArtistEntity artist);
+    @Nonnull
+    List<PaintingEntity> findByArtist(@Nonnull ArtistEntity artist);
 }

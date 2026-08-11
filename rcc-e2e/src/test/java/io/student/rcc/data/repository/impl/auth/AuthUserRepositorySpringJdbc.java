@@ -2,9 +2,11 @@ package io.student.rcc.data.repository.impl.auth;
 
 import io.student.rcc.config.Config;
 import io.student.rcc.data.entity.auth.AuthUserEntity;
-import io.student.rcc.data.extractor.AuthUserResultSetExtractor;
+import io.student.rcc.data.mapper.extractor.AuthUserResultSetExtractor;
+import io.student.rcc.data.mapper.tpl.DataSources;
 import io.student.rcc.data.repository.AuthUserRepository;
-import io.student.rcc.data.tpl.DataSources;
+import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -15,7 +17,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.*;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 public class AuthUserRepositorySpringJdbc implements AuthUserRepository {
 
@@ -25,7 +29,7 @@ public class AuthUserRepositorySpringJdbc implements AuthUserRepository {
 
 
     @Override
-    public AuthUserEntity create(AuthUserEntity user) {
+    public @Nonnull AuthUserEntity create(@Nonnull AuthUserEntity user) {
         KeyHolder kh = new GeneratedKeyHolder();
         jdbcTemplate.update(con -> {
             PreparedStatement ps = con.prepareStatement(
@@ -69,7 +73,7 @@ public class AuthUserRepositorySpringJdbc implements AuthUserRepository {
 
 
     @Override
-    public Optional<AuthUserEntity> findById(UUID id) {
+    public Optional<AuthUserEntity> findById(@Nonnull UUID id) {
         String sql = "SELECT " +
                 "  u.id AS au_id, u.username AS au_username, u.password AS au_password, " +
                 "  u.enabled AS au_enabled, u.account_non_expired AS au_account_non_expired, " +
@@ -83,7 +87,7 @@ public class AuthUserRepositorySpringJdbc implements AuthUserRepository {
     }
 
     @Override
-    public List<AuthUserEntity> findAll() {
+    public @Nonnull List<AuthUserEntity> findAll() {
         String sql = "SELECT " +
                 "  u.id AS au_id, u.username AS au_username, u.password AS au_password, " +
                 "  u.enabled AS au_enabled, u.account_non_expired AS au_account_non_expired, " +
@@ -95,7 +99,7 @@ public class AuthUserRepositorySpringJdbc implements AuthUserRepository {
     }
 
     @Override
-    public Optional<AuthUserEntity> findByUsername(String username) {
+    public Optional<AuthUserEntity> findByUsername(@Nonnull String username) {
         String sql = "SELECT " +
                 "  u.id AS au_id, u.username AS au_username, u.password AS au_password, " +
                 "  u.enabled AS au_enabled, u.account_non_expired AS au_account_non_expired, " +
@@ -105,6 +109,20 @@ public class AuthUserRepositorySpringJdbc implements AuthUserRepository {
                 "LEFT JOIN \"authority\" a ON u.id = a.user_id " +
                 "WHERE u.username = ?";
         return jdbcTemplate.query(sql, AuthUserResultSetExtractor.FOR_SINGLE, username);
+    }
+
+    @Override
+    public void remove(@NonNull AuthUserEntity authUser) {
+
+        jdbcTemplate.update(
+                "DELETE FROM \"authority\" WHERE user_id = ?",
+                authUser.getId()
+        );
+
+        jdbcTemplate.update(
+                "DELETE FROM \"user\" WHERE id = ?",
+                authUser.getId()
+        );
     }
 
 

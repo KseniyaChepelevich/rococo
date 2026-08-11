@@ -20,11 +20,14 @@ public class NavigationTest {
     @User
     @Test
     void modalFormAddPaintingShouldBeAvailable(UserJson user) {
-        Selenide.open(CFG.frontUrl(), MainPage.class)
-                .clickButtonSignIn()
+        MainPage mainPage = Selenide.open(CFG.frontUrl(), MainPage.class);
+        mainPage
+                .checkMainPageContent()
+                .header()
+                .clickEnterButton()
                 .authentication(user.username(), "12345")
                 .checkLoginVerification()
-                .clickContentNavigationPainting()
+                .clickPaintings()
                 .checkPageContent()
                 .clickAddPaintingButton()
                 .checkModalFormAddPainting()
@@ -34,11 +37,14 @@ public class NavigationTest {
     @User
     @Test
     void modalFormAddArtistShouldBeAvailable(UserJson user) {
-        Selenide.open(CFG.frontUrl(), MainPage.class)
-                .clickButtonSignIn()
+        MainPage mainPage = Selenide.open(CFG.frontUrl(), MainPage.class);
+        mainPage
+                .checkMainPageContent()
+                .header()
+                .clickEnterButton()
                 .authentication(user.username(), "12345")
                 .checkLoginVerification()
-                .clickContentNavigationArtist()
+                .clickArtists()
                 .checkPageContent()
                 .clickAddArtistButton()
                 .checkModalFormAddArtist()
@@ -48,11 +54,14 @@ public class NavigationTest {
     @User
     @Test
     void modalFormAddMuseumShouldBeAvailable(UserJson user) {
-        Selenide.open(CFG.frontUrl(), MainPage.class)
-                .clickButtonSignIn()
+        MainPage mainPage = Selenide.open(CFG.frontUrl(), MainPage.class);
+        mainPage
+                .checkMainPageContent()
+                .header()
+                .clickEnterButton()
                 .authentication(user.username(), "12345")
                 .checkLoginVerification()
-                .clickContentNavigationMuseum()
+                .clickMuseums()
                 .checkPageContent()
                 .clickAddMuseumButton()
                 .checkModalFormAddMuseum()

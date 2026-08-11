@@ -4,6 +4,7 @@ import io.student.rcc.config.Config;
 import io.student.rcc.data.entity.api.ArtistEntity;
 import io.student.rcc.data.entity.api.PaintingEntity;
 import io.student.rcc.data.repository.PaintingRepository;
+import jakarta.annotation.Nonnull;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 
@@ -11,7 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static io.student.rcc.data.jpa.EntityManagers.em;
+import static io.student.rcc.data.mapper.jpa.EntityManagers.em;
 
 
 public class PaintingRepositoryHibernate implements PaintingRepository {
@@ -19,20 +20,20 @@ public class PaintingRepositoryHibernate implements PaintingRepository {
     private final EntityManager entityManager = em(CFG.apiJdbcUrl());
 
     @Override
-    public PaintingEntity create(PaintingEntity painting) {
+    public @Nonnull PaintingEntity create(@Nonnull PaintingEntity painting) {
         entityManager.joinTransaction();
         entityManager.merge(painting);
         return painting;
     }
 
     @Override
-    public PaintingEntity update(PaintingEntity painting) {
+    public @Nonnull PaintingEntity update(@Nonnull PaintingEntity painting) {
         entityManager.joinTransaction();
         return entityManager.merge(painting);
     }
 
     @Override
-    public void remove(PaintingEntity painting) {
+    public void remove(@Nonnull PaintingEntity painting) {
         entityManager.joinTransaction();
         PaintingEntity managed = entityManager.find(PaintingEntity.class, painting.getId());
         if (managed != null) {
@@ -41,18 +42,18 @@ public class PaintingRepositoryHibernate implements PaintingRepository {
     }
 
     @Override
-    public Optional<PaintingEntity> findById(UUID id) {
+    public Optional<PaintingEntity> findById(@Nonnull UUID id) {
         return Optional.ofNullable(entityManager.find(PaintingEntity.class, id));
     }
 
     @Override
-    public List<PaintingEntity> findAll() {
+    public @Nonnull List<PaintingEntity> findAll() {
         return entityManager.createQuery("select p from PaintingEntity p", PaintingEntity.class)
                 .getResultList();
     }
 
     @Override
-    public Optional<PaintingEntity> findByTitle(String title) {
+    public Optional<PaintingEntity> findByTitle(@Nonnull String title) {
         try {
             return Optional.of(
                     entityManager.createQuery("select p from PaintingEntity p where p.title = :title", PaintingEntity.class)
@@ -65,7 +66,7 @@ public class PaintingRepositoryHibernate implements PaintingRepository {
     }
 
     @Override
-    public List<PaintingEntity> findByArtist(ArtistEntity artist) {
+    public @Nonnull List<PaintingEntity> findByArtist(@Nonnull ArtistEntity artist) {
         if (artist == null || artist.getId() == null) {
             return List.of();
         }

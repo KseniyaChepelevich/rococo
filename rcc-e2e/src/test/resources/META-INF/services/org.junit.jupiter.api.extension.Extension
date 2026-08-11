@@ -1,3 +1,2 @@
 io.student.rcc.jupiter.extension.DatabasesExtension
-io.student.rcc.jupiter.extension.JndiSuiteExtension
 io.student.rcc.jupiter.extension.BrowserExtension

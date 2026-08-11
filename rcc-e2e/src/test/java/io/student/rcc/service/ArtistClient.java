@@ -1,6 +1,7 @@
 package io.student.rcc.service;
 
 import io.student.rcc.model.api.ArtistJson;
+import jakarta.annotation.Nonnull;
 
 import java.util.List;
 import java.util.Optional;
@@ -9,17 +10,22 @@ import java.util.UUID;
 public interface ArtistClient {
 
 
-    ArtistJson create(ArtistJson artist);
+    @Nonnull
+    ArtistJson create(@Nonnull ArtistJson artist);
 
-    ArtistJson update(ArtistJson artist);
+    @Nonnull
+    ArtistJson update(@Nonnull ArtistJson artist);
 
-    void delete(ArtistJson artist);
+    void delete(@Nonnull ArtistJson artist);
 
-    Optional<ArtistJson> findById(UUID id);
+    @Nonnull
+    Optional<ArtistJson> findById(@Nonnull UUID id);
 
+    @Nonnull
     List<ArtistJson> findAll();
 
-    Optional<ArtistJson> findByName(String name);
+    @Nonnull
+    Optional<ArtistJson> findByName(@Nonnull String name);
 
 
 }

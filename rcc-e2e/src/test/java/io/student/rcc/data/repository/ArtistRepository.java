@@ -5,7 +5,7 @@ import io.student.rcc.data.entity.api.ArtistEntity;
 import io.student.rcc.data.repository.impl.api.artist.ArtistRepositoryHibernate;
 import io.student.rcc.data.repository.impl.api.artist.ArtistRepositoryJdbc;
 import io.student.rcc.data.repository.impl.api.artist.ArtistRepositorySpringJdbc;
-
+import jakarta.annotation.Nonnull;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,14 +20,18 @@ public interface ArtistRepository {
         };
     }
 
-    ArtistEntity create(ArtistEntity artist);
+    @Nonnull
+    ArtistEntity create(@Nonnull ArtistEntity artist);
 
-    ArtistEntity update(ArtistEntity artist);
+    @Nonnull
+    ArtistEntity update(@Nonnull ArtistEntity artist);
 
-    void remove(ArtistEntity artist);
-    Optional<ArtistEntity> findById(UUID id);
+    void remove(@Nonnull ArtistEntity artist);
 
+    Optional<ArtistEntity> findById(@Nonnull UUID id);
+
+    @Nonnull
     List<ArtistEntity> findAll();
 
-   Optional<ArtistEntity> findByName(String name);
+    Optional<ArtistEntity> findByName(@Nonnull String name);
 }

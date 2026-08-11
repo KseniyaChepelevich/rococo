@@ -2,26 +2,40 @@ package io.student.rcc.model.auth;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.student.rcc.data.entity.auth.AuthUserEntity;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import java.util.UUID;
 
-public record AuthUserJson(@JsonProperty("id")
-                           UUID id,
-                           @JsonProperty("username")
-                           String username,
-                           @JsonProperty("account_non_expired")
-                           Boolean account_non_expired,
-                           @JsonProperty("account_non_locked")
-                           Boolean account_non_locked,
-                           @JsonProperty("credentials_non_expired")
-                           Boolean credentials_non_expired,
-                           @JsonProperty("enabled")
-                           Boolean enabled,
-                           @JsonProperty("password")
-                           String password
+public record AuthUserJson(
+        @Nullable
+        @JsonProperty("id")
+        UUID id,
+        @Nonnull
+        @JsonProperty("username")
+        String username,
+        @Nonnull
+        @JsonProperty("account_non_expired")
+        Boolean accountNonExpired,
+        @Nonnull
+        @JsonProperty("account_non_locked")
+        Boolean accountNonLocked,
+        @Nonnull
+        @JsonProperty("credentials_non_expired")
+        Boolean credentialsNonExpired,
+        @Nonnull
+        @JsonProperty("enabled")
+        Boolean enabled,
+        @Nonnull
+        @JsonProperty("password")
+        String password
 
 ) {
-    public static AuthUserJson fromEntity(AuthUserEntity entity) {
+    @Nullable
+    public static AuthUserJson fromEntity(@Nullable AuthUserEntity entity) {
+        if (entity == null) {
+            return null;
+        }
         return new AuthUserJson(
                 entity.getId(),
                 entity.getUsername(),
@@ -33,15 +47,18 @@ public record AuthUserJson(@JsonProperty("id")
         );
     }
 
+    @Nonnull
     public AuthUserEntity toEntity() {
         AuthUserEntity entity = new AuthUserEntity();
-        entity.setId(this.id);
+        if (this.id != null) {
+            entity.setId(this.id);
+        }
         entity.setUsername(this.username);
         entity.setPassword(this.password);
         entity.setEnabled(this.enabled);
-        entity.setAccountNonExpired(this.account_non_expired);
-        entity.setAccountNonLocked(this.account_non_locked);
-        entity.setCredentialsNonExpired(this.credentials_non_expired);
+        entity.setAccountNonExpired(this.accountNonExpired);
+        entity.setAccountNonLocked(this.accountNonLocked);
+        entity.setCredentialsNonExpired(this.credentialsNonExpired);
         return entity;
     }
 

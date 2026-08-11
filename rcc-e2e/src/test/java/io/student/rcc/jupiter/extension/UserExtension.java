@@ -4,22 +4,19 @@ import io.student.rcc.jupiter.TestData;
 import io.student.rcc.jupiter.annotation.User;
 import io.student.rcc.model.api.UserJson;
 import io.student.rcc.service.UsersClient;
-import io.student.rcc.service.UsersDbClient;
+import io.student.rcc.service.impl.UsersDbClient;
 import io.student.rcc.utils.DataGenerator;
-import org.junit.jupiter.api.extension.BeforeEachCallback;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.ParameterResolver;
-import org.junit.jupiter.api.extension.ParameterContext;
-import org.junit.jupiter.api.extension.ParameterResolutionException;
+import jakarta.annotation.Nonnull;
+import org.junit.jupiter.api.extension.*;
 import org.junit.platform.commons.support.AnnotationSupport;
 
-public class UserExtension implements BeforeEachCallback, ParameterResolver {
+public class UserExtension implements BeforeEachCallback, AfterEachCallback, ParameterResolver {
     public static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(UserExtension.class);
     private UsersClient userClient;
 
 
     @Override
-    public void beforeEach(ExtensionContext context) {
+    public void beforeEach(@Nonnull ExtensionContext context) {
         if (userClient == null) {
             userClient = new UsersDbClient();
         }
@@ -40,25 +37,47 @@ public class UserExtension implements BeforeEachCallback, ParameterResolver {
     }
 
     @Override
-    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
+    public boolean supportsParameter(@Nonnull ParameterContext parameterContext, @Nonnull ExtensionContext extensionContext) {
         return UserJson.class.isAssignableFrom(parameterContext.getParameter().getType())
                 && AnnotationSupport.isAnnotated(extensionContext.getRequiredTestMethod(), User.class);
     }
 
+    @Nonnull
     @Override
-    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
+    public Object resolveParameter(@Nonnull ParameterContext parameterContext, @Nonnull ExtensionContext extensionContext) throws ParameterResolutionException {
         TestData currentData = extensionContext.getStore(TestDataExtension.NAMESPACE)
                 .get(TestDataExtension.KEY, TestData.class);
 
-        return currentData != null ? currentData.user() : null;
+        if (currentData == null || currentData.user() == null) {
+            throw new ParameterResolutionException("User data not found in ExtensionContext store.");
+        }
+
+        return currentData.user();
     }
 
-    public static String getCreatedUserPassword(ExtensionContext context) {
+    @Nonnull
+    public static String getCreatedUserPassword(@Nonnull ExtensionContext context) {
         TestData currentData = context.getStore(TestDataExtension.NAMESPACE)
                 .get(TestDataExtension.KEY, TestData.class);
 
-        return currentData != null ? currentData.userPassword() : null;
+        if (currentData == null || currentData.userPassword() == null) {
+            throw new IllegalStateException("User password not found in ExtensionContext store. Ensure @User is used.");
+        }
+
+        return currentData.userPassword();
     }
 
 
+    @Override
+    public void afterEach(@Nonnull ExtensionContext context) throws Exception {
+        TestData currentData = context.getStore(TestDataExtension.NAMESPACE)
+                .get(TestDataExtension.KEY, TestData.class);
+
+        if (currentData != null && currentData.user() != null) {
+            if (userClient == null) {
+                userClient = new UsersDbClient();
+            }
+            userClient.delete(currentData.user());
+        }
+    }
 }

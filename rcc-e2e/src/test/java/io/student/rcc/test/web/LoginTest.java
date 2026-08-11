@@ -33,9 +33,11 @@ public class LoginTest {
     @User
     @Test
     void mainPageShouldBeDisplayedAfterSuccessLogin(UserJson user) {
-        Selenide.open(CFG.frontUrl());
-        Selenide.page(MainPage.class)
-                .clickButtonSignIn()
+        MainPage mainPage = Selenide.open(CFG.frontUrl(), MainPage.class);
+        mainPage
+                .checkMainPageContent()
+                .header()
+                .clickEnterButton()
                 .authentication(user.username(), "12345")
                 .checkMainPageContent()
                 .checkLoginVerification();
@@ -46,8 +48,11 @@ public class LoginTest {
         String username = generateRandomLogin();
         String pass = generateRandomPassword();
 
-        Selenide.open(CFG.frontUrl(), MainPage.class)
-                .clickButtonSignIn()
+        MainPage mainPage = Selenide.open(CFG.frontUrl(), MainPage.class);
+        mainPage
+                .checkMainPageContent()
+                .header()
+                .clickEnterButton()
                 .incorrectAuthentication(username, pass)
                 .checkErrorLogin();
     }
