@@ -6,7 +6,7 @@ import io.qameta.allure.Step;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 
-public class RegisterPage extends BasePage {
+public class RegisterPage extends BasePage<RegisterPage> {
     private final SelenideElement usernameInput = $("input[id='username']");
     private final SelenideElement passwordInput = $("input[id='password']");
     private final SelenideElement passwordSubmitInput = $("input[id='passwordSubmit']");

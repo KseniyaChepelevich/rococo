@@ -4,6 +4,7 @@ import com.github.javafaker.Faker;
 import jakarta.annotation.Nonnull;
 
 import java.util.Locale;
+import java.util.UUID;
 
 public class DataGenerator {
     private static final Faker faker = new Faker(new Locale("ru"));
@@ -36,12 +37,12 @@ public class DataGenerator {
 
     @Nonnull
     public static String generateRandomArtist(){
-        return faker.artist().name();
+        return faker.artist().name() + "_" + UUID.randomUUID().toString().substring(0, 8);
     }
 
     @Nonnull
     public static String generateRandomTitle(){
-        return faker.lorem().word();
+        return faker.lorem().characters(10);
     }
 
     @Nonnull

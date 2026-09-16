@@ -18,6 +18,7 @@ import io.student.rcc.data.repository.impl.api.painting.PaintingRepositoryHibern
 import io.student.rcc.model.api.PaintingJson;
 import io.student.rcc.service.PaintingClient;
 import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 import java.util.Optional;
@@ -70,29 +71,23 @@ public class PaintingDbClient implements PaintingClient {
         });
     }
 
-    @Nonnull
-    private CountryEntity createCountryEntity(@Nonnull UUID id, @Nonnull String name) {
-        CountryEntity ce = new CountryEntity();
-        ce.setId(id);
-        ce.setName(name);
-        return ce;
-    }
 
     @Override
     @Nonnull
     @Step("Обновить картину в БД")
     public PaintingJson update(@Nonnull PaintingJson painting) {
         return xaTransactionTemplate.execute(() -> {
-            PaintingEntity paintingEntity = painting.toEntity();
             MuseumEntity museumEntity = museumRepository.findById(painting.museum().id())
-                    .orElseThrow(() -> new IllegalArgumentException("Museum not found"));
+                    .orElseThrow(() -> new IllegalArgumentException("Museum not found with id: " + painting.museum().id()));
+
             CountryEntity countryEntity = countryRepository.findById(painting.museum().country().id())
-                    .orElseThrow(() -> new IllegalArgumentException("Country not found"));
+                    .orElseThrow(() -> new IllegalArgumentException("Country not found with id: " + painting.museum().country().id()));
             museumEntity.setCountry(countryEntity);
 
             ArtistEntity artistEntity = artistRepository.findById(painting.artist().id())
-                    .orElseThrow(() -> new IllegalArgumentException("Artist not found"));
+                    .orElseThrow(() -> new IllegalArgumentException("Artist not found with id: " + painting.artist().id()));
 
+            PaintingEntity paintingEntity = painting.toEntity();
             paintingEntity.setArtist(artistEntity);
             paintingEntity.setMuseum(museumEntity);
 
@@ -104,8 +99,9 @@ public class PaintingDbClient implements PaintingClient {
     @Step("Удалить картину в БД")
     public void delete(@Nonnull PaintingJson painting) {
         xaTransactionTemplate.execute(() -> {
-            PaintingEntity pe = painting.toEntity();
-            paintingRepository.remove(pe);
+            paintingRepository.findById(painting.id()).ifPresent(managedPainting -> {
+                paintingRepository.remove(managedPainting);
+            });
             return null;
         });
     }
@@ -131,10 +127,13 @@ public class PaintingDbClient implements PaintingClient {
     }
 
     @Override
-    @Nonnull
-    public Optional<PaintingJson> findByTitle(@Nonnull String title) {
+    @NonNull
+    @Step("Найти картину по названию в БД")
+    public List<PaintingJson> findByTitle(@Nonnull String title) {
         return xaTransactionTemplate.execute(() ->
-                paintingRepository.findByTitle(title).map(PaintingJson::fromEntity)
+                paintingRepository.findByTitle(title).stream()
+                        .map(PaintingJson::fromEntity)
+                        .toList()
         );
     }
 
@@ -151,6 +150,12 @@ public class PaintingDbClient implements PaintingClient {
                     .collect(Collectors.toList());
         });
     }
-
+    @Nonnull
+    private CountryEntity createCountryEntity(@Nonnull UUID id, @Nonnull String name) {
+        CountryEntity ce = new CountryEntity();
+        ce.setId(id);
+        ce.setName(name);
+        return ce;
+    }
 
 }

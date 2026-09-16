@@ -18,6 +18,9 @@ def snakeYamlVersion = '1.33'
 def atomikosVersion = '6.0.0'
 def p6spyVersion = '3.9.1'
 def hibernateVersion = '7.2.0.Final'
+def okhttp3Version = '5.3.2'
+def retrofitVersion = '3.0.0'
+def springDataCommonsVersion = '3.5.5'
 
 configurations {
     agent {
@@ -53,6 +56,17 @@ dependencies {
     // JUnit
     testImplementation platform("org.junit:junit-bom:$junitVersion")
     testImplementation "org.junit.jupiter:junit-jupiter"
+    // REST
+    testImplementation "com.squareup.okhttp3:logging-interceptor:${okhttp3Version}"
+    testImplementation "com.squareup.okhttp3:okhttp-urlconnection:${okhttp3Version}"
+    testImplementation "com.squareup.okhttp3:okhttp:${okhttp3Version}"
+    testImplementation("com.squareup.retrofit2:retrofit:${retrofitVersion}") {
+        exclude group: "com.squareup.okhttp3"
+    }
+    testImplementation("com.squareup.retrofit2:converter-jackson:${retrofitVersion}") {
+        exclude group: "com.squareup.okhttp3"
+    }
+    testImplementation "org.springframework.data:spring-data-commons:${springDataCommonsVersion}"
 
     // Utils
     testImplementation "com.github.javafaker:javafaker:${fakerVersion}"
@@ -80,6 +94,7 @@ dependencies {
 test {
     useJUnitPlatform()
     jvmArgs = ["-javaagent:${configurations.agent.asPath}"]
+    systemProperty "user.client.type", System.getProperty("user.client.type", "DB")
 
     systemProperty 'java.naming.factory.initial', 'org.osjava.sj.memory.MemoryContextFactory'
     systemProperty 'org.osjava.sj.delimiter', '/'

@@ -1,34 +1,22 @@
 package io.student.rcc.page;
 
+import com.codeborne.selenide.Condition;
 import com.codeborne.selenide.Selenide;
+import com.codeborne.selenide.SelenideElement;
 import com.codeborne.selenide.WebDriverRunner;
 import io.qameta.allure.Step;
-import io.student.rcc.page.component.Header;
-import io.student.rcc.page.component.ItemCard;
-import io.student.rcc.page.component.SearchField;
-import io.student.rcc.page.component.Toast;
 import org.openqa.selenium.JavascriptExecutor;
 
 import static com.codeborne.selenide.Selenide.$;
 
-public abstract class BasePage {
-    protected final Header header = new Header();
-    protected final SearchField searchField = new SearchField();
+public abstract class BasePage<T extends BasePage<?>> {
 
-    public Header header() {
-        return this.header;
-    }
+    private final SelenideElement toast = $(".toast, [data-testid='toast']");
 
-    public SearchField search() {
-        return this.searchField;
-    }
 
-    public ItemCard card() {
-        return new ItemCard();
-    }
-
-    public Toast toast() {
-        return new Toast($(".toast, [class*='toast']"));
+    public T checkToastMessage(String text) {
+        toast.should(Condition.text(text));
+        return (T) this;
     }
 
 

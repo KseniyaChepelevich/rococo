@@ -12,6 +12,7 @@ import io.student.rcc.data.repository.impl.api.museum.MuseumRepositoryHibernate;
 import io.student.rcc.model.api.MuseumJson;
 import io.student.rcc.service.MuseumClient;
 import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 import java.util.Optional;
@@ -51,6 +52,7 @@ public class MuseumDbClient implements MuseumClient {
     }
 
     @Nonnull
+    @Step("Создать страну в БД")
     private CountryEntity createCountryEntity(@Nonnull UUID id, @Nonnull String name) {
         CountryEntity ce = new CountryEntity();
         ce.setId(id);
@@ -102,9 +104,8 @@ public class MuseumDbClient implements MuseumClient {
     }
 
     @Override
-    @Nonnull
     @Step("Найти все музеи в БД")
-    public List<MuseumJson> findAll() {
+    public @NonNull List<MuseumJson> findAll() {
         return xaTransactionTemplate.execute(() ->
                 museumRepository.findAll().stream()
                         .map(MuseumJson::fromEntity)
@@ -115,9 +116,11 @@ public class MuseumDbClient implements MuseumClient {
     @Override
     @Nonnull
     @Step("Найти музей по названию в БД")
-    public Optional<MuseumJson> findByTitle(@Nonnull String title) {
+    public List<MuseumJson> findByTitle(@Nonnull String title) {
         return xaTransactionTemplate.execute(() ->
-                museumRepository.findByTitle(title).map(MuseumJson::fromEntity)
+                museumRepository.findByTitle(title).stream()
+                        .map(MuseumJson::fromEntity)
+                        .toList()
         );
     }
 

@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @ExtendWith(MuseumExtension.class)
 public @interface Museum {
-    String title() default "Тестовый музей";
+    String title() default "";
 
     String city() default "";
 

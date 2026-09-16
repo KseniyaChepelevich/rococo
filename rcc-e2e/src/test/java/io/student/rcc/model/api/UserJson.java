@@ -1,37 +1,34 @@
 package io.student.rcc.model.api;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.student.rcc.data.entity.api.UserEntity;
+import io.student.rcc.jupiter.TestData;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
 
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public record UserJson(
-        @Nullable
         @JsonProperty("id")
         UUID id,
-        @Nonnull
         @JsonProperty("username")
         String username,
-        @Nullable
         @JsonProperty("firstname")
         String firstname,
-        @Nullable
         @JsonProperty("lastname")
         String lastname,
-        @Nullable
         @JsonProperty("avatar")
-        String avatar
+        String avatar,
+        @JsonIgnore
+        TestData testData) {
 
-) {
     @Nullable
-    public static UserJson fromEntity(@Nullable UserEntity entity) {
-        if (entity == null) {
-            return null;
-        }
-
+    public static UserJson fromEntity(@Nonnull UserEntity entity, @Nullable String avatar) {
         byte[] entityAvatar = entity.getAvatar();
         String base64Avatar = (entityAvatar != null && entityAvatar.length > 0)
                 ? new String(entityAvatar, StandardCharsets.UTF_8)
@@ -42,9 +39,20 @@ public record UserJson(
                 entity.getUsername(),
                 entity.getFirstname(),
                 entity.getLastname(),
-                base64Avatar
+                base64Avatar,
+                null
         );
     }
 
 
+    public @NonNull UserJson addTestData(@Nonnull TestData testData) {
+        return new UserJson(
+                id,
+                username,
+                firstname,
+                lastname,
+                avatar,
+                testData
+        );
+    }
 }

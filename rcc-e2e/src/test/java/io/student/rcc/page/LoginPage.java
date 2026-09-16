@@ -7,7 +7,7 @@ import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 
-public class LoginPage extends BasePage {
+public class LoginPage extends BasePage<LoginPage> {
     private final SelenideElement usernameInput = $("input[name='username']");
     private final SelenideElement passwordInput = $("input[name='password']");
     private final SelenideElement buttonFormSubmit = $("button[class='form__submit']");
@@ -50,13 +50,13 @@ public class LoginPage extends BasePage {
         return this;
     }
 
-
+    @Step("Нажать кнопку 'Войти'")
     public MainPage clickButtonFormSubmit() {
         buttonFormSubmit.click();
         return new MainPage();
     }
 
-    @Step("Нажать кнопку 'Войти'")
+    @Step("Проверка отображения кнопки 'Войти'")
     public LoginPage checkButtonSubmit() {
         buttonFormSubmit.shouldBe(visible);
         return this;

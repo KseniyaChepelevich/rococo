@@ -14,7 +14,17 @@ enum DockerConfig implements Config {
     }
 
     @Override
+    public String authUrl() {
+        return "";
+    }
+
+    @Override
     public String apiJdbcUrl() {
+        return "";
+    }
+
+    @Override
+    public String apiUrl() {
         return "";
     }
 

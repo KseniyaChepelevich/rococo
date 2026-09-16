@@ -23,14 +23,15 @@ public class UserController {
 
     private final UserService userService;
 
+
     @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
     }
 
     @GetMapping
-    public UserJson getUser(@AuthenticationPrincipal Jwt principal) {
-        return new UserJson(UUID.randomUUID(), "charly", "Чарли", "Блэк", "avatar");
+    public UserJson currentUser(@AuthenticationPrincipal Jwt principal) {
+        return userService.createNewUserIfNotPresent(principal.getClaim("sub"));
     }
 
     @PatchMapping

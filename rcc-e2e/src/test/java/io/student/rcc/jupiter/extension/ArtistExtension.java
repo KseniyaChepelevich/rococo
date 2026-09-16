@@ -11,7 +11,7 @@ import org.junit.platform.commons.support.AnnotationSupport;
 
 import static io.student.rcc.jupiter.factory.TestDataFactory.artist;
 
-public class ArtistExtension implements BeforeEachCallback, ParameterResolver {
+public class ArtistExtension implements BeforeEachCallback, AfterEachCallback, ParameterResolver {
     public static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(ArtistExtension.class);
     private ArtistClient artistClient;
 
@@ -30,6 +30,27 @@ public class ArtistExtension implements BeforeEachCallback, ParameterResolver {
                     TestDataExtension.updateContextData(context, testData -> testData.withArtist(artist));
                 });
 
+    }
+    @Override
+    public void afterEach(ExtensionContext context) {
+        TestData currentData = context.getStore(TestDataExtension.NAMESPACE)
+                .get(TestDataExtension.KEY, TestData.class);
+
+        if (currentData != null && currentData.artist() != null) {
+            ArtistJson artist = currentData.artist();
+
+            if (artist.id() != null) {
+                if (artistClient == null) {
+                    artistClient = new ArtistDbClient();
+                }
+                try {
+                    artistClient.delete(artist);
+                    System.out.println("Художник удален по ID: " + artist.id());
+                } catch (Exception e) {
+                    System.err.println("Ошибка удаления художника: " + e.getMessage());
+                }
+            }
+        }
     }
 
     @Override

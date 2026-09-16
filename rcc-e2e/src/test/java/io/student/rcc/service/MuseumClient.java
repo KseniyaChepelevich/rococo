@@ -2,6 +2,7 @@ package io.student.rcc.service;
 
 import io.student.rcc.model.api.MuseumJson;
 import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,11 +21,10 @@ public interface MuseumClient {
     @Nonnull
     Optional<MuseumJson> findById(@Nonnull UUID id);
 
-    @Nonnull
-    List<MuseumJson> findAll();
+    @NonNull List<MuseumJson> findAll();
 
     @Nonnull
-    Optional<MuseumJson> findByTitle(@Nonnull String title);
+    List<MuseumJson> findByTitle(@Nonnull String title);
 
 
 }

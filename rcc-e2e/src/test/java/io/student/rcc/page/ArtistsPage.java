@@ -1,14 +1,19 @@
 package io.student.rcc.page;
 
 import com.codeborne.selenide.ElementsCollection;
+import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
-import io.student.rcc.page.component.ItemCard;
+import io.student.rcc.page.component.Header;
+import io.student.rcc.page.component.SearchField;
 
+import java.io.File;
+
+import static com.codeborne.selenide.Condition.partialText;
 import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.*;
 
-public class ArtistsPage extends BasePage {
+public class ArtistsPage extends BasePage<ArtistsPage> {
     private final SelenideElement addArtistButton = $("button[class='btn variant-filled-primary ml-4']");
     private final SelenideElement pageHeader = $("h2[class*='text-3xl']");
     private final SelenideElement searchInput = $("input[title*='Искать художников'][type='search']");
@@ -23,12 +28,35 @@ public class ArtistsPage extends BasePage {
     private final SelenideElement biographyInput = $("textarea[name='biography']");
     private final SelenideElement closeModalButton = $("button.variant-ringed");
     private final SelenideElement addModalButton = $("form button.variant-filled-primary");
+    private final ElementsCollection artistsCards = $$("a:has(img.avatar-image)");
 
-    @Override
-    public ItemCard card() {
-        return new ItemCard("artist"); // Передаем ключ "museum"
+    private final SearchField searchField = new SearchField();
+    private final Header header = new Header();
+
+    public Header header() {
+        return header;
     }
 
+
+    @Step("Добавить художника")
+    public ArtistsPage addArtist(String name,
+                                 String description,
+                                 File addressPicture) {
+
+        checkPageContent();
+        clickAddArtistButton();
+        checkModalFormAddArtist();
+        artistNameInput(name);
+        biographyInput(description);
+        addAvatarFile(addressPicture);
+        clickAddButton();
+        return this;
+    }
+
+    @Step("Проверка что музей '{title}' присутствует в списке")
+    public void checkArtistPresentInTheList(String name) {
+       searchForArtist(name);
+    }
 
     @Step("Проверка отображения контента странице Художники")
     public ArtistsPage checkPageContent() {
@@ -74,8 +102,8 @@ public class ArtistsPage extends BasePage {
     }
 
     @Step("Добавить изображение для художника")
-    public ArtistsPage addAvatarFile() {
-        chooseArtistPhotoInput.uploadFromClasspath("files/avatar.jpg");
+    public ArtistsPage addAvatarFile(File avatar) {
+        chooseArtistPhotoInput.uploadFile(avatar);
         return this;
     }
 
@@ -83,6 +111,17 @@ public class ArtistsPage extends BasePage {
     public ArtistsPage clickAddButton() {
         addModalButton.click();
         return this;
+    }
+    @Step("Поиск художника '{query}'")
+    public ArtistsPage searchForArtist(String query) {
+        return searchField.executeSearchByEnter(query, ArtistsPage.class);
+    }
+    @Step("Открыть карточку художника с именем '{name}'")
+    public ArtistDetailsPage openArtistCard(String name) {
+        artistsCards.find(partialText(name))
+                .shouldBe(visible)
+                .click();
+        return Selenide.page(ArtistDetailsPage.class);
     }
 
 }

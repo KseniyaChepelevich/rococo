@@ -4,8 +4,8 @@ import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
-import io.student.rcc.page.component.ItemCard;
-import io.student.rcc.page.component.Toast;
+import io.student.rcc.page.component.Header;
+import io.student.rcc.page.component.SearchField;
 import jakarta.annotation.Nullable;
 import org.openqa.selenium.Keys;
 
@@ -16,17 +16,17 @@ import static com.codeborne.selenide.Selectors.byText;
 import static com.codeborne.selenide.Selenide.*;
 
 
-public class MuseumsPage extends BasePage {
+public class MuseumsPage extends BasePage<MuseumsPage> {
+
     private final SelenideElement addMuseumButton = $((byText("Добавить музей")));
-    private final SelenideElement pageHeader = $("h2[class*='text-3xl']");
-    private final ElementsCollection museumsNames = $$("a:has(div.mt-2)");
-    private final ElementsCollection addressesNames = $$("div.mt-2 + div");
-    private final ElementsCollection images = $$("img.max-w-full");
+    private final SelenideElement pageTitle = $("h2[class*='text-3xl']");
+    private final ElementsCollection museumCards = $$("a:has(div.mt-2)");
+
     private final SelenideElement editMuseumButton = $("[data-testid='edit-museum']");
 
     private final SelenideElement modalFormAddMuseum = $("form[class='modal-form space-y-4']");
     private final SelenideElement closeModalButton = $("form button.variant-ringed");
-    private final Toast toast = new Toast($("[data-testid='toast']"));
+
     private final SelenideElement museumTitleInput = $("input[name='title']");
     private final ElementsCollection countersSelect = $$("option");
     private final SelenideElement cityInput = $("input[name='city']");
@@ -34,20 +34,24 @@ public class MuseumsPage extends BasePage {
     private final SelenideElement descriptionInput = $("textarea[name='description']");
     private final SelenideElement saveButton = $("form.modal-form .variant-filled-primary");
     private final SelenideElement addModalButton = $("form button.variant-filled-primary");
+
     private final SelenideElement editMuseumCartTitle = $("header.text-2xl ");
+
     private final SelenideElement errorUnderTheTitleMuseumField = $("[name='title'] + .text-error-400");
     private final SelenideElement errorUnderTheCityMuseumField = $("[name='city'] + .text-error-400");
     private final SelenideElement errorUnderTheDescriptionMuseumField = $("[name='description'] + .text-error-400");
 
+    private final SearchField searchField = new SearchField();
+    private final Header header = new Header();
 
-    @Override
-    public ItemCard card() {
-        return new ItemCard("museum");
+    public Header header() {
+        return header;
     }
+
 
     @Step("Проверить отображение содержимого страницы музеев")
     public MuseumsPage checkPageContent() {
-        pageHeader.shouldBe(visible)
+        pageTitle.shouldBe(visible)
                 .shouldHave(text("Музеи"));
         addMuseumButton.shouldBe(visible);
         return this;
@@ -131,16 +135,16 @@ public class MuseumsPage extends BasePage {
 
 
     @Step("Открыть карточку музея с названием '{title}'")
-    public MuseumsPage openMuseumCard(String title) {
-        museumsNames.find(partialText(title))
+    public MuseumDetailsPage openMuseumCard(String title) {
+        museumCards.find(partialText(title))
                 .shouldBe(visible)
                 .click();
-        return this;
+        return Selenide.page(MuseumDetailsPage.class);
     }
 
     @Step("Найти карточку музея по названию")
     public MuseumsPage findMuseumCardByTitle(String title) {
-        museumsNames.find(partialText(title))
+        museumCards.find(partialText(title))
                 .shouldBe(visible);
         return this;
     }
@@ -159,44 +163,23 @@ public class MuseumsPage extends BasePage {
 
     @Step("Проверка, что попап об обновлении музея показан")
     public MuseumsPage checkToastUpdateIsDisplayed() {
-        toast
-                .shouldBeVisible()
-                .shouldContainMessage("Обновлен музей");
+        checkToastMessage("Обновлен музей");
         return this;
     }
 
-    @Step("Нажать на кнопку \"Закрыть\" на попапе")
-    public MuseumsPage clickCloseToastButton() {
-        toast.close();
-        return this;
-    }
-
-    @Step("Проверка, что музей был отредактирован")
-    public void checkMuseumWasEdited(String title, String country, String city, @Nullable String description) {
-        checkMuseumCardIsOpen(title, country, city, description);
-
+    @Step("Поиск музея '{query}'")
+    public MuseumsPage searchForMuseum(String query) {
+        return searchField.executeSearchByEnter(query, MuseumsPage.class);
     }
 
     @Step("Проверка что музей '{title}' присутствует в списке")
     public void checkMuseumPresentInTheList(String title, String country, String city, @Nullable String description) {
-        search()
-                .executeSearch(title, Selenide.page(MuseumsPage.class))
+        searchForMuseum(title)
                 .openMuseumCard(title)
                 .checkMuseumCardIsOpen(title, country, city, description);
 
     }
 
-    @Step("Проверка, что музей был отредактирован")
-    public void checkMuseumCardIsOpen(String title, String country, String city, @Nullable String description) {
-        card().shouldBeVisible()
-                .shouldHaveTitle(title)
-                .shouldHaveAddress(country + ", " + city);
-
-        if (description != null) {
-            card().shouldHaveDescription(description);
-        }
-
-    }
 
     @Step("Проверить, отображения ошибки минимальной длины под полем 'Название музея' отображается")
     public MuseumsPage checkMinimumLengthErrorUnderTheTitleMuseumField() {
@@ -255,8 +238,7 @@ public class MuseumsPage extends BasePage {
 
     @Step("Проверить всплывающее сообщение о создании музея")
     public MuseumsPage checkToastAdd() {
-        toast().shouldBeVisible().shouldContainMessage("Добавлен музей");
-        toast().close();
+        checkToastMessage("Добавлен музей");
         return this;
     }
 }

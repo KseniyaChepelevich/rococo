@@ -2,6 +2,7 @@ package io.student.rcc.service;
 
 import io.student.rcc.model.api.PaintingJson;
 import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,8 +25,7 @@ public interface PaintingClient {
     @Nonnull
     List<PaintingJson> findAll();
 
-    @Nonnull
-    Optional<PaintingJson> findByTitle(@Nonnull String title);
+    @NonNull List<PaintingJson> findByTitle(@Nonnull String title);
 
     @Nonnull
     List<PaintingJson> findByArtist(@Nonnull UUID artistId);

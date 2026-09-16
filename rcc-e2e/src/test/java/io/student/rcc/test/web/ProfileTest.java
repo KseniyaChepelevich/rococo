@@ -38,7 +38,7 @@ public class ProfileTest {
                 .clickEnterButton()
                 .authentication(user.username(), "12345")
                 .checkMainPageContent()
-                .checkLoginVerification()
+                .checkUserIsLoggedIn()
                 .header()
                 .clickAvatar()
                 .shouldDisplayProfileHeader()

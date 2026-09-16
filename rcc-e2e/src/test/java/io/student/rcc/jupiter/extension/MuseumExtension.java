@@ -76,23 +76,28 @@ public class MuseumExtension implements BeforeEachCallback, AfterEachCallback, A
                     }
 
                     MuseumJson museumToCreate = new MuseumJson(
-                            UUID.randomUUID(),
+                            null,
                             finalCity,
                             finalTitle,
                             finalDescription,
                             base64Photo, // Передаем готовую Base64-строку
                             staticCountry
                     );
+                    System.out.println(">>> [MuseumExtension] Тест: " + context.getDisplayName());
+                    System.out.println(">>> [MuseumExtension] Создаем музей: " + finalTitle);
+
 
                     if (anno.createInDb()) {
                         MuseumJson createdMuseum = museumClient.create(museumToCreate);
                         if (createdMuseum != null && createdMuseum.id() != null) {
                             createdMuseumIds.add(createdMuseum.id());
                         }
+                        System.out.println(">>> [MuseumExtension] Музей создан, id: " + createdMuseum.id());
                         TestDataExtension.updateContextData(context, testData -> testData.withMuseum(createdMuseum));
                     } else {
 
                         TestDataExtension.updateContextData(context, testData -> testData.withMuseum(museumToCreate));
+                        System.out.println(">>> [MuseumExtension] TestData обновлен");
                     }
                 }
         );
@@ -142,10 +147,12 @@ public class MuseumExtension implements BeforeEachCallback, AfterEachCallback, A
         if (currentData != null && currentData.museum() != null) {
             MuseumJson museum = currentData.museum();
             try {
-                museumClient.findByTitle(museum.title()).ifPresent(actualMuseum -> {
-                    museumClient.delete(actualMuseum);
-                    System.out.println("Музей, созданный через UI, удален по названию: " + museum.title());
-                });
+                museumClient.findByTitle(museum.title()).stream()
+                        .findFirst() // Берем первый найденный музей (или ничего, если список пуст)
+                        .ifPresent(actualMuseum -> {
+                            museumClient.delete(actualMuseum);
+                            System.out.println("Музей, созданный через UI, удален по названию: " + museum.title());
+                        });
             } catch (Exception e) {
                 System.err.println("Ошибка удаления UI-музея по названию: " + e.getMessage());
             }

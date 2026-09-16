@@ -80,9 +80,11 @@ public class ArtistDbClient implements ArtistClient {
     @Override
     @Nonnull
     @Step("Найти художника по имени в БД")
-    public Optional<ArtistJson> findByName(@Nonnull String name) {
+    public List<ArtistJson> findByName(@Nonnull String name) {
         return xaTransactionTemplate.execute(() ->
-                artistRepository.findByName(name).map(ArtistJson::fromEntity)
+                artistRepository.findByName(name).stream()
+                        .map(ArtistJson::fromEntity)
+                        .toList()
         );
     }
 }

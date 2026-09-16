@@ -4,6 +4,7 @@ import io.student.rcc.jupiter.TestData;
 import io.student.rcc.jupiter.annotation.User;
 import io.student.rcc.model.api.UserJson;
 import io.student.rcc.service.UsersClient;
+import io.student.rcc.service.impl.UsersApiClient;
 import io.student.rcc.service.impl.UsersDbClient;
 import io.student.rcc.utils.DataGenerator;
 import jakarta.annotation.Nonnull;
@@ -11,29 +12,27 @@ import org.junit.jupiter.api.extension.*;
 import org.junit.platform.commons.support.AnnotationSupport;
 
 public class UserExtension implements BeforeEachCallback, AfterEachCallback, ParameterResolver {
-    public static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(UserExtension.class);
-    private UsersClient userClient;
+
+
+    private UsersClient userClient = "API".equalsIgnoreCase(System.getProperty("user.client.type", "DB"))
+            ? new UsersApiClient()
+            : new UsersDbClient();
 
 
     @Override
     public void beforeEach(@Nonnull ExtensionContext context) {
-        if (userClient == null) {
-            userClient = new UsersDbClient();
-        }
         AnnotationSupport.findAnnotation(
                 context.getRequiredTestMethod(),
                 User.class
-        ).ifPresent(
-                anno -> {
-                    String username = anno.username().isEmpty()
-                            ? DataGenerator.generateRandomLogin()
-                            : anno.username();
+        ).ifPresent(anno -> {
+            final String username = anno.username().isEmpty()
+                    ? DataGenerator.generateRandomLogin()
+                    : anno.username();
 
-                    UserJson user = userClient.createUser(username, anno.password());
+            UserJson user = userClient.createUser(username, anno.password());
 
-                    TestDataExtension.updateContextData(context, testData -> testData.withUser(user, anno.password()));
-                });
-
+            TestDataExtension.updateContextData(context, testData -> testData.withUser(user, anno.password()));
+        });
     }
 
     @Override

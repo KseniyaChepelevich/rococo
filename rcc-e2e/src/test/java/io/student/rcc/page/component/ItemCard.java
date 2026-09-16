@@ -5,76 +5,36 @@ import io.qameta.allure.Step;
 
 import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Condition.visible;
-import static com.codeborne.selenide.Selenide.$;
 
-public class ItemCard {
+public class ItemCard extends BaseComponent<ItemCard> {
 
-    private final SelenideElement container = $("#page-content");
-    private final String entityType;
-
-    private final SelenideElement title = container.$("header.card-header");
-    private final SelenideElement description = container.$("#page-content div:nth-child(4)");
-    private final SelenideElement image = container.$("img.my-4");
-
-    private final SelenideElement address = container.$("div.text-center"); // Только для музеев
-    private final SelenideElement metaInfo = container.$("div.meta-info, .card-body span"); // Для автора/года картины (подставьте ваш селектор)
-
-
-    public ItemCard() {
-        this.entityType = "";
+    public ItemCard(SelenideElement self) {
+        super(self);
     }
 
-    public ItemCard(String entityType) {
-        this.entityType = entityType;
-    }
-
-    private SelenideElement editButton() {
-        if (!entityType.isEmpty()) {
-            return container.$("[data-testid='edit-" + entityType + "']");
-        }
-        return container.$("[data-testid*='edit-']");
-    }
-
-    @Step("Проверить базовое отображение карточки (заголовок, изображение и описание)")
-    public ItemCard shouldBeVisible() {
-        title.shouldBe(visible);
-//        image.shouldBe(visible);
-        description.shouldBe(visible);
+    @Step("Проверить базовое отображение карточки (заголовок и аватар)")
+    public ItemCard shouldBeVisible(String expectedTitle) {
+        shouldHaveTitle(expectedTitle);
+        shouldHaveAvatar(expectedTitle);
         return this;
     }
-
-    @Step("Нажать кнопку 'Редактировать' на карточке")
-    public ItemCard clickEditButton() {
-        editButton().shouldBe(visible).click();
-        return this;
-    }
-
 
     @Step("Проверить, что заголовок карточки содержит текст: '{expectedTitle}'")
     public ItemCard shouldHaveTitle(String expectedTitle) {
-        title.shouldHave(text(expectedTitle));
+        self.$("span.flex-auto").shouldHave(text(expectedTitle));
         return this;
     }
 
-    @Step("Проверить, что описание карточки содержит текст: '{expectedDescription}'")
-    public ItemCard shouldHaveDescription(String expectedDescription) {
-        description.shouldHave(text(expectedDescription));
+    @Step("Проверить, что карточка с заголовком:'{expectedTitle}' содержит аватар")
+    public ItemCard shouldHaveAvatar(String expectedTitle) {
+        self.$("img[alt='" + expectedTitle + "']").shouldBe(visible);
         return this;
     }
 
-    @Step("Проверить, что адрес музея содержит текст: '{expectedAddress}'")
-    public ItemCard shouldHaveAddress(String expectedAddress) {
-        address.shouldBe(visible);
-        address.shouldHave(text(expectedAddress));
+    @Step("Открыть карточку с заголовком: '{expectedTitle}'")
+    public ItemCard openDetailsPage(String entityType, String expectedTitle) {
+        self.$("a[href^='" + entityType + "'] img[alt='" + expectedTitle + "']").click();
         return this;
     }
-
-    @Step("Проверить, что доп. информация о картине содержит текст: '{expectedMeta}'")
-    public ItemCard shouldHaveMetaInfo(String expectedMeta) {
-        metaInfo.shouldBe(visible);
-        metaInfo.shouldHave(text(expectedMeta));
-        return this;
-    }
-
 
 }

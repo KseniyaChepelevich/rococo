@@ -15,9 +15,6 @@ public record TestData(
         @Nullable PaintingJson painting
 ) {
 
-    public TestData {
-
-    }
 
     @Nonnull
     public TestData withUser(UserJson user, String password) {

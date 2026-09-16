@@ -7,7 +7,7 @@ import static com.codeborne.selenide.Condition.visible;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$x;
 
-public class ProfilePage extends BasePage {
+public class ProfilePage extends BasePage<ProfilePage> {
 
     private final SelenideElement profileHeader = $x("//header[text()='Профиль']");
     private final SelenideElement profileAvatarInitials = $("form .avatar-initials");

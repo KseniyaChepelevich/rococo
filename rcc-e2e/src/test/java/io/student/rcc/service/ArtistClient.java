@@ -25,7 +25,7 @@ public interface ArtistClient {
     List<ArtistJson> findAll();
 
     @Nonnull
-    Optional<ArtistJson> findByName(@Nonnull String name);
+    List<ArtistJson> findByName(@Nonnull String name);
 
 
 }

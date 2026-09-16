@@ -1,13 +1,18 @@
 package io.student.rcc.page;
 
+
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
-import io.student.rcc.page.component.ItemCard;
+import io.student.rcc.page.component.Header;
+import io.student.rcc.page.component.SearchField;
+import org.openqa.selenium.Keys;
 
+import java.io.File;
+
+import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Condition.visible;
-import static com.codeborne.selenide.Selenide.$;
-import static com.codeborne.selenide.Selenide.$$;
+import static com.codeborne.selenide.Selenide.*;
 
 public class PaintingsPage extends BasePage {
     private final SelenideElement addPaintingButton = $("button[class='btn variant-filled-primary ml-4']");
@@ -21,9 +26,9 @@ public class PaintingsPage extends BasePage {
     private final SelenideElement modalFormAddPainting = $("form[class='modal-form space-y-4']");
     private final SelenideElement closeModalButton = $("button[class='btn variant-ringed']");
     private final SelenideElement paintingTitleInput = $("input[name='title']");
-    private final SelenideElement selectArtist = $("select[name='artistId']");
-    private final SelenideElement selectMuseum = $("select[name='museumId']");
-    private final SelenideElement choosePaintingPhotoInput = $("input[name='photo']");
+    private final ElementsCollection selectArtist = $$("select[name='authorId'] option");
+    private final ElementsCollection selectMuseum = $$("select[name='museumId'] option");
+    private final SelenideElement choosePaintingPhotoInput = $("input[name='content']");
     private final SelenideElement descriptionInput = $("textarea[name='description']");
     private final SelenideElement addModalButton = $("form button.variant-filled-primary");
 
@@ -33,10 +38,31 @@ public class PaintingsPage extends BasePage {
     private final SelenideElement paintingMuseum = $("#page-content div:nth-child(4)");
     private final SelenideElement paintingImg = $("#page-content img.my-4");
 
+    private final SearchField searchField = new SearchField();
+    private final Header header = new Header();
 
-    @Override
-    public ItemCard card() {
-        return new ItemCard("artist"); // Передаем ключ "museum"
+    public Header header() {
+        return header;
+    }
+
+    @Step("Добавить картину")
+    public PaintingsPage addPainting(String title, File addressPicture, String artist, String description, String museum) {
+        checkPageContent();
+        clickAddPaintingButton();
+        checkModalFormAddPainting();
+        titleInput(title);
+        addAvatarFile(addressPicture);
+        selectArtist(artist);
+        descriptionInput(description);
+        selectMuseum(museum);
+
+        clickAddButton();
+        return this;
+    }
+
+    @Step("Проверка что музей '{title}' присутствует в списке")
+    public void checkPaintingPresentInTheList(String title) {
+        searchForPainting(title);
     }
 
     @Step("Проверить отображение контента на странице картин")
@@ -77,15 +103,39 @@ public class PaintingsPage extends BasePage {
 
     @Step("Выбрать художника: '{artist}'")
     public PaintingsPage selectArtist(String artist) {
-        selectArtist.selectOption(artist);
+        selectArtist.first().click();
+        int attempts = 0;
+        while (attempts < 195) {
+            SelenideElement element = selectArtist.findBy(text(artist));
+            if (element.exists() && element.isDisplayed()) {
+                element.click();
+                return this;
+            }
+
+            actions().sendKeys(Keys.ARROW_DOWN).perform();
+            attempts++;
+        }
         return this;
     }
 
     @Step("Выбрать музей: '{museum}'")
     public PaintingsPage selectMuseum(String museum) {
-        selectMuseum.selectOption(museum);
+        selectMuseum.first().click();
+        int attempts = 0;
+        while (attempts < 195) {
+            SelenideElement element = selectMuseum.findBy(text(museum));
+            if (element.exists() && element.isDisplayed()) {
+                element.click();
+                return this;
+            }
+
+            actions().sendKeys(Keys.ARROW_DOWN).perform();
+            attempts++;
+        }
+
         return this;
     }
+
 
     @Step("Ввести описание картины: '{description}'")
     public PaintingsPage descriptionInput(String description) {
@@ -95,8 +145,8 @@ public class PaintingsPage extends BasePage {
     }
 
     @Step("Добавить изображение для картины")
-    public PaintingsPage addAvatarFile() {
-        choosePaintingPhotoInput.uploadFromClasspath("files/avatar.jpg");
+    public PaintingsPage addAvatarFile(File avatar) {
+        choosePaintingPhotoInput.uploadFile(avatar);
         return this;
     }
 
@@ -104,6 +154,11 @@ public class PaintingsPage extends BasePage {
     public PaintingsPage clickAddButton() {
         addModalButton.click();
         return this;
+    }
+
+    @Step("Поиск картины '{query}'")
+    public PaintingsPage searchForPainting(String query) {
+        return searchField.executeSearchByEnter(query, PaintingsPage.class);
     }
 
 

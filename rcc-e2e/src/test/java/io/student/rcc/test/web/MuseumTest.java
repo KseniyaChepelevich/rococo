@@ -12,6 +12,7 @@ import io.student.rcc.jupiter.extension.UserExtension;
 import io.student.rcc.model.api.MuseumJson;
 import io.student.rcc.model.api.UserJson;
 import io.student.rcc.page.MainPage;
+import io.student.rcc.page.MuseumDetailsPage;
 import io.student.rcc.page.MuseumsPage;
 import io.student.rcc.service.impl.MuseumDbClient;
 import io.student.rcc.utils.DataGenerator;
@@ -23,7 +24,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @WebTest
@@ -72,16 +72,11 @@ public class MuseumTest {
         String updateCountry = "Франция";
         String updateCity = "Париж";
 
-        MainPage mainPage = Selenide.open(CFG.frontUrl(), MainPage.class);
-        mainPage.header()
-                .clickEnterButton()
-                .authentication(user.username(), "12345")
-                .clickMuseums()
-                .search()
-                .executeSearch(museum.title(), Selenide.page(MuseumsPage.class))
-                .openMuseumCard(museum.title())
-                .card()
-                .shouldBeVisible()
+        MuseumDetailsPage detailsPage = loginAndNavigateToMuseums(user)
+                .searchForMuseum(museum.title())
+                .openMuseumCard(museum.title());
+
+        detailsPage.checkMuseumCardIsOpen(museum.title(), museum.country().name(), museum.city(), museum.description())
                 .clickEditButton();
 
         MuseumsPage museumsPage = Selenide.page(MuseumsPage.class);
@@ -92,9 +87,10 @@ public class MuseumTest {
                 .selectCountry(updateCountry)
                 .cityInput(updateCity)
                 .clickSaveButton()
-                .checkToastUpdateIsDisplayed()
-                .clickCloseToastButton()
-                .checkMuseumWasEdited(updatedTitle, updateCountry, updateCity, updatedDescription);
+                .checkToastMessage("Обновлен музей")
+                .header().clickMuseumNavigationButton();
+
+        museumsPage.checkMuseumPresentInTheList(updatedTitle, updateCountry, updateCity, updatedDescription);
     }
 
     @User
@@ -107,23 +103,17 @@ public class MuseumTest {
         String city = "Париж";
         File addressPicture = new File("src\\test\\resources\\files\\luvr.jpg");
 
-        MainPage mainPage = Selenide.open(CFG.frontUrl(), MainPage.class);
-        MuseumsPage museumsPage = mainPage.header()
-                .clickEnterButton()
-                .authentication(user.username(), "12345")
-                .clickMuseums();
+        MuseumsPage museumsPage = loginAndNavigateToMuseums(user);
 
         museumsPage
-                .addMuseum(title, description, country, city, addressPicture);
-        museumsPage
-                .checkToastAdd();
+                .addMuseum(title, description, country, city, addressPicture)
+                .checkToastMessage("Добавлен музей");
 
-        Optional<MuseumJson> createdMuseum = museumClient.findByTitle(title);
-
-        createdMuseum.ifPresent(museum -> {
+        museumClient.findByTitle(title).stream().findFirst().ifPresent(museum -> {
             createdMuseumIds.add(museum.id());
             System.out.println("Зарегистрирован музей для очистки: " + museum.id());
         });
+
 
         museumsPage.checkMuseumPresentInTheList(title, country, city, description);
 
@@ -131,32 +121,27 @@ public class MuseumTest {
 
     @User
     @Test
-    @DisplayName("Создание музея с минимальной длинной в названии")
+    @DisplayName("Создание музея с минимальной длинной в названии(3 символа)")
     void shouldCreateMuseumWithMinTitleLength(UserJson user) {
         String title = "Мук";
         String description = "Лувр в Париже — это самый большой и известный художественный музей в мире, который расположен в здании бывшего королевского дворца. В его огромных залах хранятся сотни тысяч произведений искусства, включая знаменитую «Мону Лизу», «Венеру Милосскую» и «Нику Самофракийскую»";
         String country = "Австралия";
         String city = "Париж";
-        File addressPicture = new File("src\\test\\resources\\files\\luvr.jpg");
 
-        MainPage mainPage = Selenide.open(CFG.frontUrl(), MainPage.class);
-        MuseumsPage museumsPage = mainPage.header()
-                .clickEnterButton()
-                .authentication(user.username(), "12345")
-                .clickMuseums();
+
+        MuseumsPage museumsPage = loginAndNavigateToMuseums(user);
 
         museumsPage
-                .addMuseum(title, description, country, city, addressPicture);
+                .addMuseum(title, description, country, city, getTestFile());
         museumsPage
-                .checkToastAdd();
+                .checkToastMessage("Добавлен музей");
 
-        Optional<MuseumJson> createdMuseum = museumClient.findByTitle(title);
-
-        createdMuseum.ifPresent(museum -> {
+        museumClient.findByTitle(title).stream().findFirst().ifPresent(museum -> {
             createdMuseumIds.add(museum.id());
             System.out.println("Зарегистрирован музей для очистки: " + museum.id());
         });
 
+        // Проверка отображения в UI
         museumsPage.checkMuseumPresentInTheList(title, country, city, description);
     }
 
@@ -168,19 +153,10 @@ public class MuseumTest {
         String description = "Лувр в Париже — это самый большой и известный художественный музей в мире, который расположен в здании бывшего королевского дворца. В его огромных залах хранятся сотни тысяч произведений искусства, включая знаменитую «Мону Лизу», «Венеру Милосскую» и «Нику Самофракийскую»";
         String country = "Австралия";
         String city = "Париж";
-        File addressPicture = new File("src\\test\\resources\\files\\luvr.jpg");
 
-        MainPage mainPage = Selenide.open(CFG.frontUrl(), MainPage.class);
-        MuseumsPage museumsPage = mainPage.header()
-                .clickEnterButton()
-                .authentication(user.username(), "12345")
-                .clickMuseums();
-
-        museumsPage
-                .addMuseum(title, description, country, city, addressPicture);
-        museumsPage
+        loginAndNavigateToMuseums(user)
+                .addMuseum(title, description, country, city, getTestFile())
                 .checkMinimumLengthErrorUnderTheTitleMuseumField();
-
     }
 
     @User
@@ -191,19 +167,9 @@ public class MuseumTest {
         String description = "Лувр в Париже — это самый большой и известный художественный музей в мире, который расположен в здании бывшего королевского дворца. В его огромных залах хранятся сотни тысяч произведений искусства, включая знаменитую «Мону Лизу», «Венеру Милосскую» и «Нику Самофракийскую»";
         String country = "Австралия";
         String city = "Париж";
-        File addressPicture = new File("src\\test\\resources\\files\\luvr.jpg");
-
-        MainPage mainPage = Selenide.open(CFG.frontUrl(), MainPage.class);
-        MuseumsPage museumsPage = mainPage.header()
-                .clickEnterButton()
-                .authentication(user.username(), "12345")
-                .clickMuseums();
-
-        museumsPage
-                .addMuseum(title, description, country, city, addressPicture);
-        museumsPage
+        loginAndNavigateToMuseums(user)
+                .addMuseum(title, description, country, city, getTestFile())
                 .checkMaximumLengthErrorUnderTheTitleMuseumField();
-
     }
 
     @User
@@ -214,53 +180,33 @@ public class MuseumTest {
         String description = "Лувр в Париже — это самый большой и известный художественный музей в мире, который расположен в здании бывшего королевского дворца. В его огромных залах хранятся сотни тысяч произведений искусства, включая знаменитую «Мону Лизу», «Венеру Милосскую» и «Нику Самофракийскую»";
         String country = "Австралия";
         String city = "Париж";
-        File addressPicture = new File("src\\test\\resources\\files\\luvr.jpg");
+        MuseumsPage museumsPage = loginAndNavigateToMuseums(user)
+                .addMuseum(title, description, country, city, getTestFile())
+                .checkToastMessage("Добавлен музей");
 
-        MainPage mainPage = Selenide.open(CFG.frontUrl(), MainPage.class);
-        MuseumsPage museumsPage = mainPage.header()
-                .clickEnterButton()
-                .authentication(user.username(), "12345")
-                .clickMuseums();
-
-        museumsPage
-                .addMuseum(title, description, country, city, addressPicture);
-        museumsPage
-                .checkToastAdd();
-
-        Optional<MuseumJson> createdMuseum = museumClient.findByTitle(title);
-
-        createdMuseum.ifPresent(museum -> {
+        museumClient.findByTitle(title).stream().findFirst().ifPresent(museum -> {
             createdMuseumIds.add(museum.id());
             System.out.println("Зарегистрирован музей для очистки: " + museum.id());
         });
 
+        // Проверка отображения в UI
         museumsPage.checkMuseumPresentInTheList(title, country, city, description);
     }
 
     @User
     @Test
-    @DisplayName("Создание музея с длинной в названии равно максимальному")
+    @DisplayName("Создание музея с длинной названия города равно максимальному")
     void shouldNotCreateMuseumWithCityMaxLength(UserJson user) {
         String title = DataGenerator.generateRandomTitle();
         String description = "Лувр в Париже — это самый большой и известный художественный музей в мире, который расположен в здании бывшего королевского дворца. В его огромных залах хранятся сотни тысяч произведений искусства, включая знаменитую «Мону Лизу», «Венеру Милосскую» и «Нику Самофракийскую»";
         String country = "Австралия";
         String city = DataGenerator.generateRandomString255();
-        File addressPicture = new File("src\\test\\resources\\files\\luvr.jpg");
 
-        MainPage mainPage = Selenide.open(CFG.frontUrl(), MainPage.class);
-        MuseumsPage museumsPage = mainPage.header()
-                .clickEnterButton()
-                .authentication(user.username(), "12345")
-                .clickMuseums();
+        MuseumsPage museumsPage = loginAndNavigateToMuseums(user)
+                .addMuseum(title, description, country, city, getTestFile())
+                .checkToastMessage("Добавлен музей");
 
-        museumsPage
-                .addMuseum(title, description, country, city, addressPicture);
-        museumsPage
-                .checkToastAdd();
-
-        Optional<MuseumJson> createdMuseum = museumClient.findByTitle(title);
-
-        createdMuseum.ifPresent(museum -> {
+        museumClient.findByTitle(title).stream().findFirst().ifPresent(museum -> {
             createdMuseumIds.add(museum.id());
             System.out.println("Зарегистрирован музей для очистки: " + museum.id());
         });
@@ -276,17 +222,9 @@ public class MuseumTest {
         String description = "Лувр в Париже — это самый большой и известный художественный музей в мире, который расположен в здании бывшего королевского дворца. В его огромных залах хранятся сотни тысяч произведений искусства, включая знаменитую «Мону Лизу», «Венеру Милосскую» и «Нику Самофракийскую»";
         String country = "Австралия";
         String city = DataGenerator.generateRandomString256();
-        File addressPicture = new File("src\\test\\resources\\files\\luvr.jpg");
 
-        MainPage mainPage = Selenide.open(CFG.frontUrl(), MainPage.class);
-        MuseumsPage museumsPage = mainPage.header()
-                .clickEnterButton()
-                .authentication(user.username(), "12345")
-                .clickMuseums();
-
-        museumsPage
-                .addMuseum(title, description, country, city, addressPicture);
-        museumsPage
+        loginAndNavigateToMuseums(user)
+                .addMuseum(title, description, country, city, getTestFile())
                 .checkMaximumLengthErrorUnderTheCityMuseumField();
     }
 
@@ -298,17 +236,8 @@ public class MuseumTest {
         String description = "Лувр в Париже — это самый большой и известный художественный музей в мире, который расположен в здании бывшего королевского дворца. В его огромных залах хранятся сотни тысяч произведений искусства, включая знаменитую «Мону Лизу», «Венеру Милосскую» и «Нику Самофракийскую»";
         String country = "Австралия";
         String city = "Ку";
-        File addressPicture = new File("src\\test\\resources\\files\\luvr.jpg");
-
-        MainPage mainPage = Selenide.open(CFG.frontUrl(), MainPage.class);
-        MuseumsPage museumsPage = mainPage.header()
-                .clickEnterButton()
-                .authentication(user.username(), "12345")
-                .clickMuseums();
-
-        museumsPage
-                .addMuseum(title, description, country, city, addressPicture);
-        museumsPage
+        loginAndNavigateToMuseums(user)
+                .addMuseum(title, description, country, city, getTestFile())
                 .checkMinimumLengthErrorUnderTheCityMuseumField();
     }
 
@@ -320,26 +249,16 @@ public class MuseumTest {
         String description = "Лувр в Париже — это самый большой и известный художественный музей в мире, который расположен в здании бывшего королевского дворца. В его огромных залах хранятся сотни тысяч произведений искусства, включая знаменитую «Мону Лизу», «Венеру Милосскую» и «Нику Самофракийскую»";
         String country = "Австралия";
         String city = "Кит";
-        File addressPicture = new File("src\\test\\resources\\files\\luvr.jpg");
+        MuseumsPage museumsPage = loginAndNavigateToMuseums(user)
+                .addMuseum(title, description, country, city, getTestFile())
+                .checkToastMessage("Добавлен музей");
 
-        MainPage mainPage = Selenide.open(CFG.frontUrl(), MainPage.class);
-        MuseumsPage museumsPage = mainPage.header()
-                .clickEnterButton()
-                .authentication(user.username(), "12345")
-                .clickMuseums();
-
-        museumsPage
-                .addMuseum(title, description, country, city, addressPicture);
-        museumsPage
-                .checkToastAdd();
-
-        Optional<MuseumJson> createdMuseum = museumClient.findByTitle(title);
-
-        createdMuseum.ifPresent(museum -> {
+        museumClient.findByTitle(title).stream().findFirst().ifPresent(museum -> {
             createdMuseumIds.add(museum.id());
             System.out.println("Зарегистрирован музей для очистки: " + museum.id());
         });
 
+        // Проверка отображения в UI
         museumsPage.checkMuseumPresentInTheList(title, country, city, description);
     }
 
@@ -352,26 +271,16 @@ public class MuseumTest {
         String description = DataGenerator.generateRandomString1000();
         String country = "Австралия";
         String city = "Сидней";
-        File addressPicture = new File("src\\test\\resources\\files\\luvr.jpg");
+        MuseumsPage museumsPage = loginAndNavigateToMuseums(user)
+                .addMuseum(title, description, country, city, getTestFile())
+                .checkToastMessage("Добавлен музей");
 
-        MainPage mainPage = Selenide.open(CFG.frontUrl(), MainPage.class);
-        MuseumsPage museumsPage = mainPage.header()
-                .clickEnterButton()
-                .authentication(user.username(), "12345")
-                .clickMuseums();
-
-        museumsPage
-                .addMuseum(title, description, country, city, addressPicture);
-        museumsPage
-                .checkToastAdd();
-
-        Optional<MuseumJson> createdMuseum = museumClient.findByTitle(title);
-
-        createdMuseum.ifPresent(museum -> {
+        museumClient.findByTitle(title).stream().findFirst().ifPresent(museum -> {
             createdMuseumIds.add(museum.id());
             System.out.println("Зарегистрирован музей для очистки: " + museum.id());
         });
 
+        // Проверка отображения в UI
         museumsPage.checkMuseumPresentInTheList(title, country, city, description);
     }
 
@@ -383,17 +292,8 @@ public class MuseumTest {
         String description = DataGenerator.generateRandomString1001();
         String country = "Австралия";
         String city = "Сидней";
-        File addressPicture = new File("src\\test\\resources\\files\\luvr.jpg");
-
-        MainPage mainPage = Selenide.open(CFG.frontUrl(), MainPage.class);
-        MuseumsPage museumsPage = mainPage.header()
-                .clickEnterButton()
-                .authentication(user.username(), "12345")
-                .clickMuseums();
-
-        museumsPage
-                .addMuseum(title, description, country, city, addressPicture);
-        museumsPage
+        loginAndNavigateToMuseums(user)
+                .addMuseum(title, description, country, city, getTestFile())
                 .checkMaximumLengthErrorUnderTheDescriptionMuseumField();
     }
 
@@ -405,17 +305,8 @@ public class MuseumTest {
         String description = DataGenerator.generateRandomString9();
         String country = "Австралия";
         String city = "Ку";
-        File addressPicture = new File("src\\test\\resources\\files\\luvr.jpg");
-
-        MainPage mainPage = Selenide.open(CFG.frontUrl(), MainPage.class);
-        MuseumsPage museumsPage = mainPage.header()
-                .clickEnterButton()
-                .authentication(user.username(), "12345")
-                .clickMuseums();
-
-        museumsPage
-                .addMuseum(title, description, country, city, addressPicture);
-        museumsPage
+        loginAndNavigateToMuseums(user)
+                .addMuseum(title, description, country, city, getTestFile())
                 .checkMinimumLengthErrorUnderTheDescriptionMuseumField();
     }
 
@@ -427,27 +318,29 @@ public class MuseumTest {
         String description = DataGenerator.generateRandomString10();
         String country = "Австралия";
         String city = "Кит";
-        File addressPicture = new File("src\\test\\resources\\files\\luvr.jpg");
+        MuseumsPage museumsPage = loginAndNavigateToMuseums(user)
+                .addMuseum(title, description, country, city, getTestFile())
+                .checkToastMessage("Добавлен музей");
 
-        MainPage mainPage = Selenide.open(CFG.frontUrl(), MainPage.class);
-        MuseumsPage museumsPage = mainPage.header()
-                .clickEnterButton()
-                .authentication(user.username(), "12345")
-                .clickMuseums();
-
-        museumsPage
-                .addMuseum(title, description, country, city, addressPicture);
-        museumsPage
-                .checkToastAdd();
-
-        Optional<MuseumJson> createdMuseum = museumClient.findByTitle(title);
-
-        createdMuseum.ifPresent(museum -> {
+        museumClient.findByTitle(title).stream().findFirst().ifPresent(museum -> {
             createdMuseumIds.add(museum.id());
             System.out.println("Зарегистрирован музей для очистки: " + museum.id());
         });
 
+        // Проверка отображения в UI
         museumsPage.checkMuseumPresentInTheList(title, country, city, description);
+    }
+
+    private static MuseumsPage loginAndNavigateToMuseums(UserJson user) {
+        return Selenide.open(CFG.frontUrl(), MainPage.class)
+                .header()
+                .clickEnterButton()
+                .authentication(user.username(), "12345")
+                .clickMuseums();
+    }
+
+    private File getTestFile() {
+        return new File("src/test/resources/files/luvr.jpg");
     }
 
 }

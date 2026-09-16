@@ -1,6 +1,7 @@
 package io.student.rcc.test.web;
 
 import com.codeborne.selenide.Selenide;
+import com.codeborne.selenide.WebDriverRunner;
 import io.student.rcc.config.Config;
 import io.student.rcc.jupiter.annotation.User;
 import io.student.rcc.model.api.UserJson;
@@ -16,8 +17,11 @@ public class RegistrationTest {
 
     @AfterEach
     void cleanUp() {
-        Selenide.clearBrowserCookies();
-        Selenide.clearBrowserLocalStorage();
+        if (WebDriverRunner.hasWebDriverStarted()) {
+            Selenide.clearBrowserCookies();
+            Selenide.clearBrowserLocalStorage();
+            Selenide.closeWebDriver();
+        }
     }
 
     @Test

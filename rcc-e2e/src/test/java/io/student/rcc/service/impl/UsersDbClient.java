@@ -14,6 +14,7 @@ import io.student.rcc.data.repository.impl.auth.AuthUserRepositoryHibernate;
 import io.student.rcc.model.api.UserJson;
 import io.student.rcc.service.UsersClient;
 import jakarta.annotation.Nonnull;
+import jakarta.persistence.OneToMany;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -49,7 +50,7 @@ public class UsersDbClient implements UsersClient {
 
                     UserEntity userEntity = createUserEntity(userId, username);
                     userRepositoryH.create(userEntity);
-                    return new UserJson(userId, username, null, null, null);
+                    return new UserJson(userId, username, null, null, null, null);
                 }
         );
     }
@@ -91,6 +92,7 @@ public class UsersDbClient implements UsersClient {
         return user;
     }
 
+    @OneToMany
     @Step("Удалить пользователя из БД")
     public void delete(@Nonnull UserJson user) {
         xaTransactionTemplate.execute(() -> {

@@ -28,7 +28,7 @@ public record MuseumJson(
         String photo,
         @Nonnull
         @JsonProperty("country")
-        CountryJson country) {
+        CountryJson country){
 
 
     @Nullable
