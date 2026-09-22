@@ -7,6 +7,7 @@ import io.student.rcc.jupiter.extension.*;
 import io.student.rcc.model.api.UserJson;
 import io.student.rcc.page.MainPage;
 import io.student.rcc.service.UsersClient;
+import io.student.rcc.service.impl.UsersDbClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,7 +26,7 @@ import static io.student.rcc.utils.DataGenerator.generateRandomPassword;
 public class LoginTest {
     private static final Config CFG = Config.getInstance();
 
-    private UsersClient usersClient;
+    private final UsersClient usersClient = new UsersDbClient();
 
     @AfterEach
     void cleanUp() {

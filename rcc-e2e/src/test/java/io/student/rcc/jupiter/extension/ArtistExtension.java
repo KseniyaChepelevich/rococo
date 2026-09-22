@@ -13,14 +13,12 @@ import static io.student.rcc.jupiter.factory.TestDataFactory.artist;
 
 public class ArtistExtension implements BeforeEachCallback, AfterEachCallback, ParameterResolver {
     public static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(ArtistExtension.class);
-    private ArtistClient artistClient;
+    private final ArtistClient artistClient = new ArtistDbClient();
 
 
     @Override
     public void beforeEach(@Nonnull ExtensionContext context) {
-        if (artistClient == null) {
-            artistClient = new ArtistDbClient();
-        }
+
         AnnotationSupport.findAnnotation(
                 context.getRequiredTestMethod(),
                 Artist.class
@@ -40,9 +38,9 @@ public class ArtistExtension implements BeforeEachCallback, AfterEachCallback, P
             ArtistJson artist = currentData.artist();
 
             if (artist.id() != null) {
-                if (artistClient == null) {
-                    artistClient = new ArtistDbClient();
-                }
+//                if (artistClient == null) {
+//                    artistClient = new ArtistDbClient();
+//                }
                 try {
                     artistClient.delete(artist);
                     System.out.println("Художник удален по ID: " + artist.id());

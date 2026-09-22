@@ -22,15 +22,12 @@ import static io.student.rcc.jupiter.factory.TestDataFactory.museum;
 
 public class MuseumExtension implements BeforeEachCallback, AfterEachCallback, AfterAllCallback, ParameterResolver {
     public static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(MuseumExtension.class);
-    private MuseumClient museumClient;
+    private final MuseumClient museumClient = new MuseumDbClient();
     private final List<UUID> createdMuseumIds = Collections.synchronizedList(new ArrayList<>());
 
 
     @Override
     public void beforeEach(@Nonnull ExtensionContext context) {
-        if (museumClient == null) {
-            museumClient = new MuseumDbClient();
-        }
         createdMuseumIds.clear();
         AnnotationSupport.findAnnotation(
                 context.getRequiredTestMethod(),
@@ -122,11 +119,6 @@ public class MuseumExtension implements BeforeEachCallback, AfterEachCallback, A
 
     @Override
     public void afterEach(@Nonnull ExtensionContext context) throws Exception {
-        if (museumClient == null) {
-            museumClient = new MuseumDbClient();
-        }
-
-        // 1. Удаляем музеи, которые были созданы через API в beforeEach (по сохраненным ID)
         synchronized (createdMuseumIds) {
             for (UUID id : createdMuseumIds) {
                 try {
@@ -163,9 +155,6 @@ public class MuseumExtension implements BeforeEachCallback, AfterEachCallback, A
     public void afterAll(@Nonnull ExtensionContext context) {
         if (!createdMuseumIds.isEmpty()) {
             System.err.println("Обнаружены неудаленные музеи (" + createdMuseumIds.size() + "). Удаление...");
-            if (museumClient == null) {
-                museumClient = new MuseumDbClient();
-            }
             synchronized (createdMuseumIds) {
                 for (UUID id : createdMuseumIds) {
                     try {

@@ -13,14 +13,11 @@ import static io.student.rcc.jupiter.factory.TestDataFactory.painting;
 
 public class PaintingExtension implements BeforeEachCallback, ParameterResolver {
     public static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(PaintingExtension.class);
-    private PaintingClient paintingClient;
+    private final PaintingClient paintingClient = new PaintingDbClient();
 
 
     @Override
     public void beforeEach(@Nonnull ExtensionContext context) {
-        if (paintingClient == null) {
-            paintingClient = new PaintingDbClient();
-        }
         AnnotationSupport.findAnnotation(
                 context.getRequiredTestMethod(),
                 Painting.class
