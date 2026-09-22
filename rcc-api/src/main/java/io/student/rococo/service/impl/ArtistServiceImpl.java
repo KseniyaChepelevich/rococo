@@ -41,9 +41,6 @@ public class ArtistServiceImpl implements ArtistService {
     @Override
     @Transactional(readOnly = true)
     public Page<ArtistJson> findArtistByName(String name, Pageable pageable) {
-        if (pageable == null) {
-            throw new IllegalArgumentException("Параметр Pageable не может быть null");
-        }
         String safeName = (name == null) ? "" : name.trim();
         return artistRepository.findAllByNameContainsIgnoreCase(safeName, pageable)
                 .map(ArtistJson::fromEntity);
@@ -51,14 +48,9 @@ public class ArtistServiceImpl implements ArtistService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<ArtistJson> getAll(String name, Pageable pageable) {
-        if (pageable == null) {
-            throw new IllegalArgumentException("Параметр Pageable не может быть null");
-        }
-        Page<ArtistEntity> artist = (name == null || name.isBlank())
-                ? artistRepository.findAll(pageable)
-                : artistRepository.findAllByNameContainsIgnoreCase(name, pageable);
-        return artist.map(ArtistJson::fromEntity);
+    public Page<ArtistJson> getAll(Pageable pageable) {
+        return artistRepository.findAll(pageable)
+                .map(ArtistJson::fromEntity);
     }
 
     @Override
@@ -69,7 +61,6 @@ public class ArtistServiceImpl implements ArtistService {
         }
 
         ArtistEntity entity = artist.toEntity();
-        entity.setId(null);
         return ArtistJson.fromEntity(artistRepository.save(entity));
     }
 
@@ -81,8 +72,12 @@ public class ArtistServiceImpl implements ArtistService {
         }
 
         ArtistEntity entity = getRequiredArtist(artist.id());
-        entity.setName(artist.name());
-        entity.setBiography(artist.biography());
+        if (artist.name() != null) {
+            entity.setName(artist.name());
+        }
+        if (artist.biography() != null) {
+            entity.setBiography(artist.biography());
+        }
 
         if (artist.photo() != null) {
             entity.setPhoto(
