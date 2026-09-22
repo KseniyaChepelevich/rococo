@@ -9,10 +9,9 @@ public interface ArtistService {
 
     Page<ArtistJson> findArtistByName(String name, Pageable pageable);
 
-    Page<ArtistJson> getAll(String title, Pageable pageable);
+    Page<ArtistJson> getAll(Pageable pageable);
 
     ArtistJson add(ArtistJson artist);
 
     ArtistJson update(ArtistJson artist);
-    void remove(ArtistJson artist);
 }
