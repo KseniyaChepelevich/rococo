@@ -4,14 +4,21 @@ import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.WebDriverRunner;
 import io.student.rcc.config.Config;
 import io.student.rcc.jupiter.annotation.User;
+import io.student.rcc.jupiter.extension.BrowserExtension;
+import io.student.rcc.jupiter.extension.TestDataExtension;
+import io.student.rcc.jupiter.extension.UserExtension;
 import io.student.rcc.model.api.UserJson;
 import io.student.rcc.page.MainPage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static io.student.rcc.utils.DataGenerator.generateRandomLogin;
 import static io.student.rcc.utils.DataGenerator.generateRandomPassword;
 
+@ExtendWith(BrowserExtension.class)
+@ExtendWith(TestDataExtension.class)
+@ExtendWith(UserExtension.class)
 public class RegistrationTest {
     private static final Config CFG = Config.getInstance();
 
