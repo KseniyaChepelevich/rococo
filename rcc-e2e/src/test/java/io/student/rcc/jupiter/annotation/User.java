@@ -12,7 +12,9 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @ExtendWith(UserExtension.class)
 public @interface User {
-    String password() default "1234";
+    String password() default "12345";
 
-    boolean enabled() default true;
+    String username() default "";
+
+
 }

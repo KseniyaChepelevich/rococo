@@ -16,9 +16,9 @@ export const validateForm = (
                     ? Errors.TITLE_LENGTH_CONSTRAINT_MAX
                     : "",
 
-            description: description?.length < 11
+            description: description?.length < 10
                 ? Errors.DESCRIPTION_LENGTH_CONSTRAINT_MIN
-                : description?.length > 2000
+                : description?.length > 1000
                     ? Errors.DESCRIPTION_LENGTH_CONSTRAINT_MAX
                     : "",
 
