@@ -1,70 +1,82 @@
 package io.student.rcc.jupiter.extension;
 
+import io.student.rcc.jupiter.TestData;
 import io.student.rcc.jupiter.annotation.User;
-import io.student.rcc.model.UserJson;
+import io.student.rcc.model.api.UserJson;
 import io.student.rcc.service.UsersClient;
-import io.student.rcc.service.UsersDbClient;
-import org.junit.jupiter.api.extension.AfterEachCallback;
-import org.junit.jupiter.api.extension.BeforeEachCallback;
-import org.junit.jupiter.api.extension.ParameterContext;
-import org.junit.jupiter.api.extension.ParameterResolutionException;
-import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.jupiter.api.extension.ParameterResolver;
+import io.student.rcc.service.impl.UsersApiClient;
+import io.student.rcc.service.impl.UsersDbClient;
+import io.student.rcc.utils.DataGenerator;
+import jakarta.annotation.Nonnull;
+import org.junit.jupiter.api.extension.*;
 import org.junit.platform.commons.support.AnnotationSupport;
 
-import static io.student.rcc.utils.DataGenerator.generateRandomLogin;
-import static io.student.rcc.utils.DataGenerator.generateFirstname;
-import static io.student.rcc.utils.DataGenerator.generateLastname;
+public class UserExtension implements BeforeEachCallback, AfterEachCallback, ParameterResolver {
 
-public class UserExtension implements BeforeEachCallback, ParameterResolver, AfterEachCallback {
-    public static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(UserExtension.class);
-    private final UsersClient userClient = new UsersDbClient();
+
+    private UsersClient userClient = "API".equalsIgnoreCase(System.getProperty("user.client.type", "DB"))
+            ? new UsersApiClient()
+            : new UsersDbClient();
+
 
     @Override
-    public void beforeEach(ExtensionContext context) {
+    public void beforeEach(@Nonnull ExtensionContext context) {
         AnnotationSupport.findAnnotation(
                 context.getRequiredTestMethod(),
                 User.class
-        ).ifPresent(
-                anno -> {
-                    UserJson user = new UserJson(
-                            null,
-                            generateRandomLogin(),
-                            generateFirstname(),
-                            generateLastname(),
-                            null,
-                            anno.password(),
-                            anno.enabled()
-                    );
+        ).ifPresent(anno -> {
+            final String username = anno.username().isEmpty()
+                    ? DataGenerator.generateRandomLogin()
+                    : anno.username();
 
-                    context.getStore(NAMESPACE)
-                            .put(context.getUniqueId(), userClient.createUser(user));
-                }
-        );
+            UserJson user = userClient.createUser(username, anno.password());
 
+            TestDataExtension.updateContextData(context, testData -> testData.withUser(user, anno.password()));
+        });
     }
 
     @Override
-    public boolean supportsParameter(ParameterContext parameterContext, ExtensionContext extensionContext) {
+    public boolean supportsParameter(@Nonnull ParameterContext parameterContext, @Nonnull ExtensionContext extensionContext) {
         return UserJson.class.isAssignableFrom(parameterContext.getParameter().getType())
                 && AnnotationSupport.isAnnotated(extensionContext.getRequiredTestMethod(), User.class);
     }
 
+    @Nonnull
     @Override
-    public Object resolveParameter(ParameterContext parameterContext, ExtensionContext extensionContext) throws ParameterResolutionException {
-        return extensionContext.getStore(NAMESPACE)
-                .get(extensionContext.getUniqueId(), UserJson.class);
+    public Object resolveParameter(@Nonnull ParameterContext parameterContext, @Nonnull ExtensionContext extensionContext) throws ParameterResolutionException {
+        TestData currentData = extensionContext.getStore(TestDataExtension.NAMESPACE)
+                .get(TestDataExtension.KEY, TestData.class);
+
+        if (currentData == null || currentData.user() == null) {
+            throw new ParameterResolutionException("User data not found in ExtensionContext store.");
+        }
+
+        return currentData.user();
+    }
+
+    @Nonnull
+    public static String getCreatedUserPassword(@Nonnull ExtensionContext context) {
+        TestData currentData = context.getStore(TestDataExtension.NAMESPACE)
+                .get(TestDataExtension.KEY, TestData.class);
+
+        if (currentData == null || currentData.userPassword() == null) {
+            throw new IllegalStateException("User password not found in ExtensionContext store. Ensure @User is used.");
+        }
+
+        return currentData.userPassword();
     }
 
 
     @Override
-    public void afterEach(ExtensionContext context) {
-        UserJson user = context.getStore(NAMESPACE)
-                .get(context.getUniqueId(), UserJson.class);
+    public void afterEach(@Nonnull ExtensionContext context) throws Exception {
+        TestData currentData = context.getStore(TestDataExtension.NAMESPACE)
+                .get(TestDataExtension.KEY, TestData.class);
 
-        if (user != null) {
-            userClient.deleteUser(user);
+        if (currentData != null && currentData.user() != null) {
+            if (userClient == null) {
+                userClient = new UsersDbClient();
+            }
+            userClient.delete(currentData.user());
         }
     }
-
 }
