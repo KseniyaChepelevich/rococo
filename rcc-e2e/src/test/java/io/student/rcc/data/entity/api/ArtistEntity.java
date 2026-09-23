@@ -15,7 +15,7 @@ import java.util.UUID;
 @Table(name = "artist")
 public class ArtistEntity implements Serializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false, columnDefinition = "BINARY(16)")
     private UUID id;
 

@@ -22,8 +22,9 @@ public class ArtistRepositoryHibernate implements ArtistRepository {
     @Override
     public @Nonnull ArtistEntity create(@Nonnull ArtistEntity artist) {
         entityManager.joinTransaction();
-        entityManager.merge(artist);
-        return artist;
+        ArtistEntity managed = entityManager.merge(artist);
+        entityManager.flush();
+        return managed;
     }
 
     @Override

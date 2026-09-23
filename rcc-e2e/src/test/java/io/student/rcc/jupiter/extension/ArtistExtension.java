@@ -25,6 +25,11 @@ public class ArtistExtension implements BeforeEachCallback, AfterEachCallback, P
         ).ifPresent(
                 anno -> {
                     ArtistJson artist = artistClient.create(artist(anno));
+                    System.out.println(">>> [ArtistExtension] Создан художник с ID: " + artist.id());
+                    if (artist.id() == null) {
+                        System.err.println(">>> [ArtistExtension] ВНИМАНИЕ: ID художника равен null!");
+                        System.err.println(">>> [ArtistExtension] Проверьте ArtistJson.fromEntity() - передаётся ли entity.getId()");
+                    }
                     TestDataExtension.updateContextData(context, testData -> testData.withArtist(artist));
                 });
 
@@ -33,20 +38,22 @@ public class ArtistExtension implements BeforeEachCallback, AfterEachCallback, P
     public void afterEach(ExtensionContext context) {
         TestData currentData = context.getStore(TestDataExtension.NAMESPACE)
                 .get(TestDataExtension.KEY, TestData.class);
+        if(currentData == null) {
+            return;
+        }
 
-        if (currentData != null && currentData.artist() != null) {
-            ArtistJson artist = currentData.artist();
+        if (currentData.artist() == null) {
+            return;
+        }
+        ArtistJson artist = currentData.artist();
 
-            if (artist.id() != null) {
-//                if (artistClient == null) {
-//                    artistClient = new ArtistDbClient();
-//                }
-                try {
-                    artistClient.delete(artist);
-                    System.out.println("Художник удален по ID: " + artist.id());
-                } catch (Exception e) {
-                    System.err.println("Ошибка удаления художника: " + e.getMessage());
-                }
+        if (artist.id() != null) {
+            try {
+                artistClient.delete(artist);
+
+            } catch (Exception e) {
+
+                e.printStackTrace();
             }
         }
     }
