@@ -44,6 +44,7 @@ public class Header extends BaseComponent<Header> {
     @Step("Нажать на иконку профиля")
     public ProfilePage clickAvatar() {
         self.$("figure[class*='avatar'], .avatar").click();
+        System.out.println("Открыт профиль пользователя");
         return page(ProfilePage.class);
     }
 

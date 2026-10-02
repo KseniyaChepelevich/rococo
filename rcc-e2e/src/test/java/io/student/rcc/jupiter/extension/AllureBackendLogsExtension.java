@@ -5,6 +5,7 @@ import io.qameta.allure.AllureLifecycle;
 import io.qameta.allure.model.TestResult;
 import lombok.SneakyThrows;
 
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
@@ -13,6 +14,9 @@ public class AllureBackendLogsExtension implements SuiteExtension{
 
     public static final String caseName = "Rococo backend logs";
 
+    private static final String[] SERVICES = {"rcc-auth", "rcc-api"};
+
+
     @SneakyThrows
     @Override
     public void afterSuite() {
@@ -20,14 +24,55 @@ public class AllureBackendLogsExtension implements SuiteExtension{
         final String caseId = UUID.randomUUID().toString();
         allureLifecycle.scheduleTestCase(new TestResult().setUuid(caseId).setName(caseName));
         allureLifecycle.startTestCase(caseId);
+        int attachedCount = 0;
 
-        allureLifecycle.addAttachment(
-                "Rococo-auth log",
-                "text/html",
-                ".log",
-                Files.newInputStream(Path.of("../rcc-auth/logs/rcc-auth/app.log"))
-        );
+        for (String service : SERVICES) {
+            Path logFile = findLogFile(service);
+
+            if (logFile == null) {
+                System.out.println("[AllureBackendLogsExtension] Лог для " + service
+                        + " не найден, пропускаем.");
+                continue;
+            }
+
+            try (InputStream is = Files.newInputStream(logFile)) {
+                allureLifecycle.addAttachment(
+                        service + " log",
+                        "text/html",
+                        ".log",
+                        is
+                );
+                attachedCount++;
+                System.out.println("[AllureBackendLogsExtension] Прикреплён лог: "
+                        + logFile.toAbsolutePath());
+            } catch (Exception e) {
+                System.err.println("[AllureBackendLogsExtension] Ошибка чтения лога "
+                        + service + ": " + e.getMessage());
+            }
+        }
+
+        if (attachedCount == 0) {
+            System.out.println("[AllureBackendLogsExtension] "
+                    + "Не было прикреплено ни одного лога.");
+        }
         allureLifecycle.stopTestCase(caseId);
         allureLifecycle.writeTestCase(caseId);
+    }
+
+    private Path findLogFile(String service) {
+        String[] candidates = {
+                "../" + service + "/logs/" + service + "/app.log",
+                "./" + service + "/logs/" + service + "/app.log",
+                "./logs/" + service + "/app.log",
+                "../logs/" + service + "/app.log"
+        };
+
+        for (String candidate : candidates) {
+            Path path = Path.of(candidate);
+            if (Files.exists(path)) {
+                return path;
+            }
+        }
+        return null;
     }
 }

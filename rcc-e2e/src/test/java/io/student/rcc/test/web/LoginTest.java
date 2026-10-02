@@ -3,7 +3,10 @@ package io.student.rcc.test.web;
 import com.codeborne.selenide.Selenide;
 import io.student.rcc.config.Config;
 import io.student.rcc.jupiter.annotation.User;
-import io.student.rcc.jupiter.extension.*;
+import io.student.rcc.jupiter.extension.BrowserExtension;
+import io.student.rcc.jupiter.extension.MuseumExtension;
+import io.student.rcc.jupiter.extension.TestDataExtension;
+import io.student.rcc.jupiter.extension.UserExtension;
 import io.student.rcc.model.api.UserJson;
 import io.student.rcc.page.MainPage;
 import io.student.rcc.service.UsersClient;
@@ -11,8 +14,6 @@ import io.student.rcc.service.impl.UsersDbClient;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 import static io.student.rcc.utils.DataGenerator.generateRandomLogin;
 import static io.student.rcc.utils.DataGenerator.generateRandomPassword;
@@ -34,7 +35,7 @@ public class LoginTest {
         Selenide.clearBrowserLocalStorage();
     }
 
-//    @ValueSource(strings = {"test123457"})
+    //    @ValueSource(strings = {"test123457"})
 //    @ParameterizedTest
     @User
     @Test
@@ -64,5 +65,6 @@ public class LoginTest {
                 .incorrectAuthentication(username, pass)
                 .checkErrorLogin();
     }
+
 
 }

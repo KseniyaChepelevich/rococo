@@ -1,11 +1,20 @@
 package io.student.rcc.page;
 
+import com.codeborne.selenide.Condition;
+import com.codeborne.selenide.Selenide;
 import com.codeborne.selenide.SelenideElement;
 import io.qameta.allure.Step;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.time.Duration;
+
+import static com.codeborne.selenide.Condition.hidden;
 import static com.codeborne.selenide.Condition.visible;
-import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$x;
+import static com.codeborne.selenide.Selenide.$;
+import static com.codeborne.selenide.Selenide.$$;
 
 public class ProfilePage extends BasePage<ProfilePage> {
 
@@ -24,6 +33,7 @@ public class ProfilePage extends BasePage<ProfilePage> {
     @Step("Проверить, что заголовок в окне профиля отображается")
     public ProfilePage shouldDisplayProfileHeader() {
         profileHeader.shouldBe(visible);
+        System.out.println("Заголовок в профиле пользователя отображается");
         return this;
     }
 
@@ -36,6 +46,7 @@ public class ProfilePage extends BasePage<ProfilePage> {
     @Step("Проверить, что отображается аватар")
     public ProfilePage shouldDisplayAvatar() {
         avatarIcon.shouldBe(visible);
+        System.out.println("Аватар отображается");
         return this;
     }
 
@@ -93,6 +104,58 @@ public class ProfilePage extends BasePage<ProfilePage> {
     public ProfilePage checkSurnameInputValue(String expectedSurname) {
         surnameInput.shouldHave(com.codeborne.selenide.Condition.value(expectedSurname));
         return this;
+    }
+
+    @Step("Дождаться открытия модального окна профиля")
+    public ProfilePage waitForModalOpen() {
+        profileHeader.shouldBe(visible, Duration.ofSeconds(10));
+        return this;
+    }
+
+    @Step("Дождаться закрытия модального окна профиля")
+    public ProfilePage waitForModalClose() {
+        profileHeader.shouldBe(hidden, Duration.ofSeconds(10));
+        return this;
+    }
+
+    @Step("Дождаться полной загрузки аватара")
+    public ProfilePage waitForAvatarLoaded() {
+        SelenideElement visibleAvatar = $$(".modal .avatar-image")
+                .find(Condition.visible);
+
+        visibleAvatar.shouldBe(visible, Duration.ofSeconds(10));
+
+        Selenide.executeJavaScript(
+                "const img = arguments[0];" +
+                        "if (!img.complete || img.naturalWidth === 0) {" +
+                        "  return new Promise((resolve) => {" +
+                        "    img.onload = () => resolve(true);" +
+                        "    img.onerror = () => resolve(false);" +
+                        "    setTimeout(() => resolve(false), 10000);" +
+                        "  });" +
+                        "}" +
+                        "return true;",
+                visibleAvatar
+        );
+
+        return this;
+    }
+
+    @Step("Сделать скриншот аватара")
+    public BufferedImage takeAvatarScreenshot() throws IOException {
+
+        SelenideElement visibleAvatar = $$(".modal .avatar-image")
+                .find(com.codeborne.selenide.Condition.visible);
+
+        visibleAvatar.shouldBe(visible, Duration.ofSeconds(10));
+        return ImageIO.read(visibleAvatar.screenshot());
+    }
+
+    @Step("Нажать кнопку 'Обновить профиль' и дождаться закрытия модалки")
+    public MainPage clickUpdateProfileButtonAndWaitClose() {
+        updateProfileButton.click();
+        waitForModalClose();
+        return new MainPage();
     }
 
 }

@@ -3,6 +3,7 @@ package io.student.rcc.test.web;
 import com.codeborne.selenide.Selenide;
 import io.student.rcc.config.Config;
 import io.student.rcc.jupiter.annotation.Museum;
+import io.student.rcc.jupiter.annotation.ScreenShotTest;
 import io.student.rcc.jupiter.annotation.User;
 import io.student.rcc.jupiter.annotation.meta.WebTest;
 import io.student.rcc.jupiter.extension.BrowserExtension;
@@ -16,15 +17,22 @@ import io.student.rcc.page.MuseumDetailsPage;
 import io.student.rcc.page.MuseumsPage;
 import io.student.rcc.service.impl.MuseumDbClient;
 import io.student.rcc.utils.DataGenerator;
+import io.student.rcc.utils.ScreenDiffResult;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import static com.codeborne.selenide.Selenide.$;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @WebTest
 @ExtendWith(BrowserExtension.class)
@@ -141,7 +149,6 @@ public class MuseumTest {
             System.out.println("Зарегистрирован музей для очистки: " + museum.id());
         });
 
-        // Проверка отображения в UI
         museumsPage.checkMuseumPresentInTheList(title, country, city, description);
     }
 
@@ -189,7 +196,6 @@ public class MuseumTest {
             System.out.println("Зарегистрирован музей для очистки: " + museum.id());
         });
 
-        // Проверка отображения в UI
         museumsPage.checkMuseumPresentInTheList(title, country, city, description);
     }
 
@@ -258,7 +264,6 @@ public class MuseumTest {
             System.out.println("Зарегистрирован музей для очистки: " + museum.id());
         });
 
-        // Проверка отображения в UI
         museumsPage.checkMuseumPresentInTheList(title, country, city, description);
     }
 
@@ -280,7 +285,6 @@ public class MuseumTest {
             System.out.println("Зарегистрирован музей для очистки: " + museum.id());
         });
 
-        // Проверка отображения в UI
         museumsPage.checkMuseumPresentInTheList(title, country, city, description);
     }
 
@@ -327,7 +331,6 @@ public class MuseumTest {
             System.out.println("Зарегистрирован музей для очистки: " + museum.id());
         });
 
-        // Проверка отображения в UI
         museumsPage.checkMuseumPresentInTheList(title, country, city, description);
     }
 
@@ -337,6 +340,30 @@ public class MuseumTest {
                 .clickEnterButton()
                 .authentication(user.username(), "12345")
                 .clickMuseums();
+    }
+
+    @User
+    @Museum
+    @ScreenShotTest(value = "files/expected_museum_picture.png", rewriteExpected = false)
+    @DisplayName("Проверка отображения картинки загруженного музея")
+    void checkAddedMuseumPicture(UserJson user, MuseumJson museum, BufferedImage expected) throws IOException {
+        MuseumDetailsPage detailsPage = loginAndNavigateToMuseums(user)
+                .searchForMuseum(museum.title())
+                .openMuseumCard(museum.title());
+
+        detailsPage.checkMuseumCardIsOpen(museum.title(), museum.country().name(), museum.city(), museum.description())
+                .clickEditButton();
+
+        MuseumsPage museumsPage = Selenide.page(MuseumsPage.class);
+        museumsPage
+                .checkModalFormAddMuseum()
+                .addMuseumPicture(getTestFile())
+                .clickSaveButton()
+                .checkToastMessage("Обновлен музей");
+
+        BufferedImage actual = ImageIO.read($("img.my-4").screenshot());
+        assertFalse(new ScreenDiffResult(expected, actual));
+
     }
 
     private File getTestFile() {
