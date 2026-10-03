@@ -1,24 +1,34 @@
 package io.student.rcc.test.web;
 
 import com.codeborne.selenide.Selenide;
+import com.codeborne.selenide.WebDriverRunner;
 import io.student.rcc.config.Config;
 import io.student.rcc.jupiter.annotation.User;
-import io.student.rcc.model.UserJson;
+import io.student.rcc.jupiter.extension.BrowserExtension;
+import io.student.rcc.jupiter.extension.TestDataExtension;
+import io.student.rcc.jupiter.extension.UserExtension;
+import io.student.rcc.model.api.UserJson;
 import io.student.rcc.page.MainPage;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
+import static io.student.rcc.utils.DataGenerator.generateRandomLogin;
+import static io.student.rcc.utils.DataGenerator.generateRandomPassword;
 
-import static io.student.rcc.utils.DataGenerator.*;
-
+@ExtendWith(BrowserExtension.class)
+@ExtendWith(TestDataExtension.class)
+@ExtendWith(UserExtension.class)
 public class RegistrationTest {
     private static final Config CFG = Config.getInstance();
 
     @AfterEach
     void cleanUp() {
-        Selenide.clearBrowserCookies();
-        Selenide.clearBrowserLocalStorage();
+        if (WebDriverRunner.hasWebDriverStarted()) {
+            Selenide.clearBrowserCookies();
+            Selenide.clearBrowserLocalStorage();
+            Selenide.closeWebDriver();
+        }
     }
 
     @Test
@@ -26,22 +36,29 @@ public class RegistrationTest {
         String username = generateRandomLogin();
         String pass = generateRandomPassword();
 
-        Selenide.open(CFG.frontUrl(), MainPage.class)
-                .clickButtonSignIn()
+        MainPage mainPage = Selenide.open(CFG.frontUrl(), MainPage.class);
+        mainPage
+                .checkMainPageContent()
+                .header()
+                .clickEnterButton()
                 .clickRegisterLink()
                 .registration(username, pass)
-                .checkVisiblityWelcomeTitle();
+                .checkVisibilityWelcomeTitle();
     }
 
     @User
     @Test
     void shouldNotRegisterUserWithExistingUsername(UserJson user) {
-        Selenide.open(CFG.frontUrl(), MainPage.class)
-                .clickButtonSignIn()
+
+        MainPage mainPage = Selenide.open(CFG.frontUrl(), MainPage.class);
+        mainPage
+                .checkMainPageContent()
+                .header()
+                .clickEnterButton()
                 .clickRegisterLink()
                 .inputUsername(user.username())
-                .inputPassword(user.password())
-                .inputSubmitPassword(user.password())
+                .inputPassword("12345")
+                .inputSubmitPassword("12345")
                 .clickButtonSubmit()
                 .checkVisibilityUsernameAlreadyExMessage();
     }
@@ -51,8 +68,11 @@ public class RegistrationTest {
         String username = generateRandomLogin();
         String pass = generateRandomPassword();
 
-        Selenide.open(CFG.frontUrl(), MainPage.class)
-                .clickButtonSignIn()
+        MainPage mainPage = Selenide.open(CFG.frontUrl(), MainPage.class);
+        mainPage
+                .checkMainPageContent()
+                .header()
+                .clickEnterButton()
                 .clickRegisterLink()
                 .inputUsername(username)
                 .inputPassword(pass)

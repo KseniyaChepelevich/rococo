@@ -1,6 +1,7 @@
 plugins {
-//    id 'io.qameta.allure' version '2.12.0'
-    id "io.freefair.lombok" version "8.6" // Эта версия совместима с Gradle 9
+    id 'io.qameta.allure' version '3.0.1'
+    id 'io.qameta.allure-adapter' version '3.0.1'
+    id "io.freefair.lombok" version "8.6"
 }
 
 group = 'io.student'
@@ -14,6 +15,12 @@ def fakerVersion = '1.0.2'
 def springJdbcVersion = '6.2.2'
 def mySqlConnectorVersion = '8.0.33'
 def snakeYamlVersion = '1.33'
+def atomikosVersion = '6.0.0'
+def p6spyVersion = '3.9.1'
+def hibernateVersion = '7.2.0.Final'
+def okhttp3Version = '5.3.2'
+def retrofitVersion = '3.0.0'
+def springDataCommonsVersion = '3.5.5'
 
 configurations {
     agent {
@@ -29,16 +36,37 @@ configurations.configureEach {
 }
 
 dependencies {
+
+    testImplementation 'jakarta.annotation:jakarta.annotation-api:3.0.0'
     // WEB
     testImplementation "com.codeborne:selenide:${selenideVersion}"
     // Allure
+    agent "org.aspectj:aspectjweaver:${aspectJVersion}"
     testImplementation platform("io.qameta.allure:allure-bom:$allureVersion")
-    testImplementation "io.qameta.allure:allure-junit5"
-    agent "org.aspectj:aspectjweaver:$aspectJVersion"
+    testImplementation "io.qameta.allure:allure-attachments"
+    testImplementation "io.qameta.allure:allure-okhttp3"
+    testImplementation "io.qameta.allure:allure-grpc"
+    testImplementation("io.qameta.allure:allure-junit5") {
+        exclude group: "org.junit.jupiter"
+    }
+    testImplementation("io.qameta.allure:allure-selenide") {
+        exclude group: 'com.codeborne'
+    }
 
     // JUnit
     testImplementation platform("org.junit:junit-bom:$junitVersion")
     testImplementation "org.junit.jupiter:junit-jupiter"
+    // REST
+    testImplementation "com.squareup.okhttp3:logging-interceptor:${okhttp3Version}"
+    testImplementation "com.squareup.okhttp3:okhttp-urlconnection:${okhttp3Version}"
+    testImplementation "com.squareup.okhttp3:okhttp:${okhttp3Version}"
+    testImplementation("com.squareup.retrofit2:retrofit:${retrofitVersion}") {
+        exclude group: "com.squareup.okhttp3"
+    }
+    testImplementation("com.squareup.retrofit2:converter-jackson:${retrofitVersion}") {
+        exclude group: "com.squareup.okhttp3"
+    }
+    testImplementation "org.springframework.data:spring-data-commons:${springDataCommonsVersion}"
 
     // Utils
     testImplementation "com.github.javafaker:javafaker:${fakerVersion}"
@@ -48,6 +76,12 @@ dependencies {
     // DB
     testImplementation "org.springframework:spring-jdbc:${springJdbcVersion}"
     testImplementation "mysql:mysql-connector-java:${mySqlConnectorVersion}"
+    testImplementation "com.atomikos:transactions-jta:${atomikosVersion}:jakarta"
+    testImplementation "com.atomikos:transactions-hibernate4:${atomikosVersion}:jakarta"
+    testImplementation "com.atomikos:transactions-jdbc:${atomikosVersion}"
+    testImplementation "p6spy:p6spy:${p6spyVersion}"
+    testImplementation "org.hibernate:hibernate-core:${hibernateVersion}"
+    testImplementation 'simple-jndi:simple-jndi:0.11.4.1'
 
     // Security
     testImplementation("org.springframework.security:spring-security-crypto")
@@ -60,6 +94,15 @@ dependencies {
 test {
     useJUnitPlatform()
     jvmArgs = ["-javaagent:${configurations.agent.asPath}"]
+    systemProperty "user.client.type", System.getProperty("user.client.type", "DB")
+
+    systemProperty 'java.naming.factory.initial', 'org.osjava.sj.memory.MemoryContextFactory'
+    systemProperty 'org.osjava.sj.delimiter', '/'
+    systemProperty 'org.osjava.sj.space', 'java:comp/env'
+
+    systemProperty 'org.osjava.sj.root', "${buildDir}/tmp/jndi"
+    systemProperty 'org.osjava.sj.jndi.shared', 'true'
+
 
     testLogging {
         events "passed", "skipped", "failed"
