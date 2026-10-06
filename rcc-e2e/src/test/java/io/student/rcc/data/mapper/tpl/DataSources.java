@@ -1,6 +1,7 @@
 package io.student.rcc.data.mapper.tpl;
 
 import com.atomikos.jdbc.AtomikosDataSourceBean;
+import com.p6spy.engine.spy.P6DataSource;
 import io.student.rcc.config.Config;
 import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
@@ -44,13 +45,16 @@ public class DataSources {
                     dsBean.setXaProperties(props);
                     dsBean.setPoolSize(3);
                     dsBean.setMaxPoolSize(10);
+                    P6DataSource p6DataSource = new P6DataSource(
+                            dsBean
+                    );
                     try {
                         InitialContext context = new InitialContext();
-                        context.rebind("java:comp/env/jdbc/" + uniqId, dsBean);
+                        context.rebind("java:comp/env/jdbc/" + uniqId, p6DataSource);
                     } catch (NamingException e) {
                         throw new RuntimeException(e);
                     }
-                    return dsBean;
+                    return p6DataSource;
                 }
         );
     }
