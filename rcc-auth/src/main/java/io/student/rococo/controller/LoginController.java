@@ -18,7 +18,7 @@ public class LoginController {
 
   private final String frontUri;
 
-  public LoginController(@Value("${rococo-front.base-uri}") String frontUri) {
+  public LoginController(@Value("${rococo-front.base-uri") String frontUri) {
     this.frontUri = frontUri;
   }
 
@@ -38,8 +38,13 @@ public class LoginController {
 
   private boolean isOauthSessionContainsRedirectUri(HttpSession session, String redirectUri) {
     final DefaultSavedRequest savedRequest = (DefaultSavedRequest) session.getAttribute(PRE_REQ_ATTR);
-    return savedRequest != null &&
-        savedRequest.getRequestURI().equals(PRE_REQ_URI) &&
-        Arrays.stream(savedRequest.getParameterValues("redirect_uri")).anyMatch(url -> url.contains(redirectUri));
+    if (savedRequest == null || !savedRequest.getRequestURI().equals(PRE_REQ_URI)) {
+      return false;
+    }
+
+    String cleanFrontHost = redirectUri.replace("http://", "").replace("https://", "").split(":")[0];
+
+    return Arrays.stream(savedRequest.getParameterValues("redirect_uri"))
+            .anyMatch(url -> url.contains(cleanFrontHost) || url.contains("127.0.0.1") || url.contains("localhost"));
   }
 }

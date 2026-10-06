@@ -28,17 +28,17 @@ public class MuseumEntity implements Serializable {
   @Column(name = "id", nullable = false, columnDefinition = "BINARY(16)")
   private UUID id;
 
-  @Column(nullable = false, unique = true)
+  @Column(name = "title", nullable = false, unique = true)
   private String title;
 
-  @Column
+  @Column(name = "description", length = 1000)
   private String description;
 
-  @Column
+  @Column(name = "city", length = 255)
   private String city;
 
   @Lob
-  @Column(columnDefinition = "LONGBLOB")
+  @Column(name="photo", columnDefinition = "LONGBLOB")
   private byte[] photo;
 
   @OneToOne(fetch = FetchType.EAGER)
