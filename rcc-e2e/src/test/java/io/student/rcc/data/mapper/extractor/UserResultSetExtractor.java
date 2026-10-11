@@ -17,7 +17,10 @@ public class UserResultSetExtractor {
 
     public static UserEntity mapRow(ResultSet rs) throws SQLException {
         UserEntity user = new UserEntity();
-        user.setId(rs.getObject("u_id", UUID.class));
+        String idString = rs.getString("u_id");
+        if (idString != null) {
+            user.setId(UUID.fromString(idString));
+        }
         user.setAvatar(rs.getBytes("u_avatar"));
         user.setFirstname(rs.getString("u_firstname"));
         user.setLastname(rs.getString("u_lastname"));

@@ -15,7 +15,10 @@ public class AuthUserResultSetExtractor {
 
     private static AuthUserEntity mapUserProperties(ResultSet rs) throws SQLException {
         AuthUserEntity authUser = new AuthUserEntity();
-        authUser.setId(rs.getObject("au_id", UUID.class));
+        String userIdStr = rs.getString("au_id");
+        if (userIdStr != null) {
+            authUser.setId(UUID.fromString(userIdStr));
+        }
         authUser.setUsername(rs.getString("au_username"));
         authUser.setPassword(rs.getString("au_password"));
         authUser.setAccountNonExpired(rs.getBoolean("au_account_non_expired"));
@@ -26,16 +29,18 @@ public class AuthUserResultSetExtractor {
     }
 
     private static AuthorityEntity mapAuthorityProperty(ResultSet rs) throws SQLException {
-        Object authorityId = rs.getObject("ath_authority_id");
-        if (authorityId == null) {
+        String authorityIdStr = rs.getString("ath_authority_id");
+        if (authorityIdStr == null) {
             return null;
         }
         AuthorityEntity authority = new AuthorityEntity();
-        authority.setId((UUID) authorityId);
+        authority.setId(UUID.fromString(authorityIdStr));
+
         String authStr = rs.getString("ath_authority_name");
         if (authStr != null) {
             authority.setAuthority(Authority.valueOf(authStr));
         }
+
         return authority;
     }
 
@@ -43,7 +48,12 @@ public class AuthUserResultSetExtractor {
         Map<UUID, AuthUserEntity> userMap = new LinkedHashMap<>();
 
         while (rs.next()) {
-            UUID userId = rs.getObject("au_id", UUID.class);
+            String userIdStr = rs.getString("au_id");
+            UUID userId = userIdStr != null ? UUID.fromString(userIdStr) : null;
+
+            if (userId == null) {
+                continue; // Защита от некорректных данных
+            }
             AuthUserEntity authUser = userMap.computeIfAbsent(userId, id -> {
                 try {
                     return mapUserProperties(rs);

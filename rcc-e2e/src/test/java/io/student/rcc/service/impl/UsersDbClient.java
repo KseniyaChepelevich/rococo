@@ -10,7 +10,11 @@ import io.student.rcc.data.mapper.tpl.XaTransactionTemplate;
 import io.student.rcc.data.repository.AuthUserRepository;
 import io.student.rcc.data.repository.UserRepository;
 import io.student.rcc.data.repository.impl.api.user.UserRepositoryHibernate;
+import io.student.rcc.data.repository.impl.api.user.UserRepositoryJdbc;
+import io.student.rcc.data.repository.impl.api.user.UserRepositorySpringJdbc;
 import io.student.rcc.data.repository.impl.auth.AuthUserRepositoryHibernate;
+import io.student.rcc.data.repository.impl.auth.AuthUserRepositoryJdbc;
+import io.student.rcc.data.repository.impl.auth.AuthUserRepositorySpringJdbc;
 import io.student.rcc.model.api.UserJson;
 import io.student.rcc.service.UsersClient;
 import jakarta.annotation.Nonnull;
@@ -27,8 +31,8 @@ public class UsersDbClient implements UsersClient {
 
     private static final PasswordEncoder pe = PasswordEncoderFactories.createDelegatingPasswordEncoder();
 
-    private final AuthUserRepository authUserRepositoryH = new AuthUserRepositoryHibernate();
-    private final UserRepository userRepositoryH = new UserRepositoryHibernate();
+    private final AuthUserRepository authUserRepository = new AuthUserRepositoryHibernate();
+    private final UserRepository userRepository = new UserRepositoryHibernate();
 
 
     private final XaTransactionTemplate xaTransactionTemplate = new XaTransactionTemplate(
@@ -46,10 +50,10 @@ public class UsersDbClient implements UsersClient {
 
         return xaTransactionTemplate.execute(() -> {
                     AuthUserEntity authUserEntity = createAuthUserEntity(userId, username, encodedPassword);
-                    authUserRepositoryH.create(authUserEntity);
+                    authUserRepository.create(authUserEntity);
 
                     UserEntity userEntity = createUserEntity(userId, username);
-                    userRepositoryH.create(userEntity);
+                    userRepository.create(userEntity);
                     return new UserJson(userId, username, null, null, null, null);
                 }
         );
@@ -96,13 +100,14 @@ public class UsersDbClient implements UsersClient {
     @Step("Удалить пользователя из БД")
     public void delete(@Nonnull UserJson user) {
         xaTransactionTemplate.execute(() -> {
-            userRepositoryH.findById(user.id()).ifPresent(managedUser -> {
-                // Передаем живой managed-объект в репозиторий на удаление
-                userRepositoryH.remove(managedUser);
-            });
-            authUserRepositoryH.findById(user.id()).ifPresent(managedAuthUser -> {
-                authUserRepositoryH.remove(managedAuthUser);
-            });
+            UserEntity userEntity = new UserEntity();
+            userEntity.setId(user.id());
+            userRepository.remove(userEntity);
+
+            AuthUserEntity authUserEntity = new AuthUserEntity();
+            authUserEntity.setId(user.id());
+            authUserRepository.remove(authUserEntity);
+
             return null;
         });
     }

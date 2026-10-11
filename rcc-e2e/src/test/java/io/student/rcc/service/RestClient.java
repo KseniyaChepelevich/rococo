@@ -1,5 +1,6 @@
 package io.student.rcc.service;
 
+import io.qameta.allure.okhttp3.AllureOkHttp3;
 import io.student.rcc.config.Config;
 import io.student.rcc.api.core.ThreadSafeCookieStore;
 import jakarta.annotation.Nonnull;
@@ -47,6 +48,7 @@ public abstract class RestClient {
             }
         }
         builder.addNetworkInterceptor(new HttpLoggingInterceptor().setLevel(level));
+        builder.addNetworkInterceptor(new AllureOkHttp3());
         builder.cookieJar(
                 new JavaNetCookieJar(
                         new CookieManager(

@@ -11,6 +11,7 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.nio.ByteBuffer;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -27,33 +28,27 @@ public class AuthUserRepositoryJdbc implements AuthUserRepository {
     @Override
     public @Nonnull AuthUserEntity create(@Nonnull AuthUserEntity user) {
         try (PreparedStatement userPs = holder(CFG.authJdbcUrl()).connection().prepareStatement(
-                "INSERT INTO `user` (username, password, enabled, account_non_expired, account_non_locked, credentials_non_expired) " +
-                        "VALUES (?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+                "INSERT INTO `user` (id, username, password, enabled, account_non_expired, account_non_locked, credentials_non_expired) " +
+                        "VALUES (UUID_TO_BIN(?, true), ?, ?, ?, ?, ?, ?)");
              PreparedStatement authorityPs = holder(CFG.authJdbcUrl()).connection().prepareStatement(
                      "INSERT INTO `authority` (user_id, authority) " +
-                             "VALUES (?, ?)"
+                             "VALUES (UUID_TO_BIN(?, true), ?)"
              )
         ) {
-            userPs.setString(1, user.getUsername());
-            userPs.setString(2, user.getPassword());
-            userPs.setBoolean(3, user.getEnabled());
-            userPs.setBoolean(4, user.getAccountNonExpired());
-            userPs.setBoolean(5, user.getAccountNonLocked());
-            userPs.setBoolean(6, user.getCredentialsNonExpired());
+            userPs.setString(1, user.getId().toString());
+            userPs.setString(2, user.getUsername());
+            userPs.setString(3, user.getPassword());
+            userPs.setBoolean(4, user.getEnabled());
+            userPs.setBoolean(5, user.getAccountNonExpired());
+            userPs.setBoolean(6, user.getAccountNonLocked());
+            userPs.setBoolean(7, user.getCredentialsNonExpired());
 
             userPs.executeUpdate();
 
-            final UUID generatedKey;
-            try (ResultSet rs = userPs.getGeneratedKeys()) {
-                if (rs.next()) {
-                    generatedKey = rs.getObject("id", UUID.class);
-                } else {
-                    throw new SQLException("Can`t find id in ResultSet");
-                }
-            }
-            user.setId(generatedKey);
+            final String userIdStr = user.getId().toString();
+
             for (AuthorityEntity authority : user.getAuthorities()) {
-                authorityPs.setObject(1, generatedKey);
+                authorityPs.setObject(1, userIdStr);
                 authorityPs.setString(2, authority.getAuthority().name());
                 authorityPs.addBatch();
             }
@@ -68,11 +63,11 @@ public class AuthUserRepositoryJdbc implements AuthUserRepository {
     @Override
     public Optional<AuthUserEntity> findById(@Nonnull UUID id) {
         try (PreparedStatement ps = holder(CFG.authJdbcUrl()).connection().prepareStatement(
-                "SELECT a.id as authority_id, authority, u.id, u.username, u.password, " +
+                "SELECT BIN_TO_UUID(a.id, true) as authority_id, authority, BIN_TO_UUID(u.id, true) as id, u.username, u.password, " +
                         "u.enabled, u.account_non_expired, u.account_non_locked, u.credentials_non_expired " +
-                        "FROM \"user\" u JOIN \"authority\" a ON u.id = a.user_id WHERE u.id = ?"
+                        "FROM `user` u JOIN `authority` a ON u.id = a.user_id WHERE u.id = UUID_TO_BIN(?, true)"
         )) {
-            ps.setObject(1, id);
+            ps.setObject(1, id.toString());
             ps.execute();
 
             try (ResultSet rs = ps.getResultSet()) {
@@ -86,7 +81,7 @@ public class AuthUserRepositoryJdbc implements AuthUserRepository {
                     AuthorityEntity ae = new AuthorityEntity();
                     ae.setUser(user);
                     ae.setAuthority(Authority.valueOf(rs.getString("authority")));
-                    ae.setId(rs.getObject("authority_id", UUID.class));
+                    ae.setId(UUID.fromString(rs.getString("authority_id")));
                     authorityEntities.add(ae);
                 }
                 if (user == null) {
@@ -105,13 +100,13 @@ public class AuthUserRepositoryJdbc implements AuthUserRepository {
     public @Nonnull List<AuthUserEntity> findAll() {
         Map<UUID, AuthUserEntity> userMap = new LinkedHashMap<>();
         try (PreparedStatement ps = holder(CFG.authJdbcUrl()).connection().prepareStatement(
-                "SELECT a.id as authority_id, authority, u.id, u.username, u.password, " +
+                "SELECT a.id as authority_id, authority, BIN_TO_UUID(u.id, true) as id, u.username, u.password, " +
                         "u.enabled, u.account_non_expired, u.account_non_locked, u.credentials_non_expired " +
-                        "FROM \"user\" u JOIN authority a ON u.id = a.user_id"
+                        "FROM `user` u JOIN `authority` a ON u.id = a.user_id"
         )) {
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    UUID userId = rs.getObject("id", UUID.class);
+                    UUID userId = UUID.fromString(rs.getString("id"));;
                     AuthUserEntity user = userMap.computeIfAbsent(userId, id -> {
                         try {
                             AuthUserEntity ue = AuthUserEntityRowMapper.instance.mapRow(rs, 1);
@@ -139,9 +134,9 @@ public class AuthUserRepositoryJdbc implements AuthUserRepository {
     @Override
     public Optional<AuthUserEntity> findByUsername(@Nonnull String username) {
         try (PreparedStatement ps = holder(CFG.authJdbcUrl()).connection().prepareStatement(
-                "SELECT a.id as authority_id, authority, u.id, u.username, u.password, " +
+                "SELECT a.id as authority_id, authority,BIN_TO_UUID(u.id, true) as id, u.username, u.password, " +
                         "u.enabled, u.account_non_expired, u.account_non_locked, u.credentials_non_expired " +
-                        "FROM \"user\" u JOIN authority a ON u.id = a.user_id WHERE u.username = ?"
+                        "FROM `user` u JOIN `authority` a ON u.id = a.user_id WHERE u.username = ?"
         )) {
             ps.setString(1, username);
             ps.execute();
@@ -175,15 +170,15 @@ public class AuthUserRepositoryJdbc implements AuthUserRepository {
     @Override
     public void remove(@NonNull AuthUserEntity authUser) {
         try (PreparedStatement authorityPs = holder(CFG.authJdbcUrl()).connection().prepareStatement(
-                "DELETE FROM \"authority\" WHERE user_id = ?"
+                "DELETE FROM `authority` WHERE user_id =  UUID_TO_BIN(?, true)"
         );
              PreparedStatement userPs = holder(CFG.authJdbcUrl()).connection().prepareStatement(
-                     "DELETE FROM \"user\" WHERE id = ?"
+                     "DELETE FROM `user` WHERE id =  UUID_TO_BIN(?, true)"
              )
         ) {
-            authorityPs.setObject(1, authUser.getId());
+            authorityPs.setObject(1, authUser.getId().toString());
 
-            userPs.setObject(1, authUser.getId());
+            userPs.setString(1, authUser.getId().toString());
             authorityPs.execute();
             userPs.execute();
 
@@ -191,5 +186,12 @@ public class AuthUserRepositoryJdbc implements AuthUserRepository {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private byte[] uuidToBytes(UUID uuid) {
+        ByteBuffer bb = ByteBuffer.wrap(new byte[16]);
+        bb.putLong(uuid.getMostSignificantBits());
+        bb.putLong(uuid.getLeastSignificantBits());
+        return bb.array();
     }
 }

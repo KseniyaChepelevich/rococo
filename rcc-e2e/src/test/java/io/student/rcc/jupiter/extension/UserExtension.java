@@ -14,9 +14,7 @@ import org.junit.platform.commons.support.AnnotationSupport;
 public class UserExtension implements BeforeEachCallback, AfterEachCallback, ParameterResolver {
 
 
-    private UsersClient userClient = "API".equalsIgnoreCase(System.getProperty("user.client.type", "DB"))
-            ? new UsersApiClient()
-            : new UsersDbClient();
+    private UsersClient userClient = new UsersApiClient();
 
 
     @Override

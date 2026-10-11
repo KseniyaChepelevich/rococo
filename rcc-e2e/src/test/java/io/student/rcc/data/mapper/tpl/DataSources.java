@@ -37,7 +37,7 @@ public class DataSources {
 
                     dsBean.setUniqueResourceName(uniqId);
 
-                    dsBean.setXaDataSourceClassName("ocom.mysql.cj.jdbc.MysqlXADataSource");
+                    dsBean.setXaDataSourceClassName("com.mysql.cj.jdbc.MysqlXADataSource");
                     Properties props = new Properties();
                     props.put("URL", jdbcUrl);
                     props.put("user", CFG.dbUsername());

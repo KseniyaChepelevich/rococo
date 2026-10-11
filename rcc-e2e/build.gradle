@@ -44,7 +44,7 @@ dependencies {
     // Allure
     agent "org.aspectj:aspectjweaver:${aspectJVersion}"
     testImplementation platform("io.qameta.allure:allure-bom:$allureVersion")
-    testImplementation "io.qameta.allure:allure-attachments"
+    testImplementation "io.qameta.allure:allure-attachments:${allureVersion}"
     testImplementation "io.qameta.allure:allure-okhttp3"
     testImplementation "io.qameta.allure:allure-grpc"
     testImplementation("io.qameta.allure:allure-junit5") {
@@ -84,6 +84,7 @@ dependencies {
     testImplementation "p6spy:p6spy:${p6spyVersion}"
     testImplementation "org.hibernate:hibernate-core:${hibernateVersion}"
     testImplementation 'simple-jndi:simple-jndi:0.11.4.1'
+    testImplementation 'com.github.vertical-blank:sql-formatter:2.0.5'
 
     // Security
     testImplementation("org.springframework.security:spring-security-crypto")

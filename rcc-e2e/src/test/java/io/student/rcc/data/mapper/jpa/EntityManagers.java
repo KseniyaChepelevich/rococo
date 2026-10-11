@@ -24,27 +24,18 @@ public class EntityManagers {
                 jdbcUrl,
                 key -> {
 
-                    DataSources.dataSource(jdbcUrl);
+//                    DataSources.dataSource(jdbcUrl);
 
                     String persistenceUnitName = key.contains("rococo-auth") ? "rococo-auth" : "rococo-api";
 
                     Map<String, Object> properties = new HashMap<>();
-                    properties.put("jakarta.persistence.jdbc.url", key);
-
-                    properties.put("jakarta.persistence.jdbc.user", CFG.dbUsername());
-                    properties.put("jakarta.persistence.jdbc.password", CFG.dbPassword());
-
-                    properties.put("jakarta.persistence.jdbc.driver", "com.mysql.cj.jdbc.Driver");
-
-                    properties.put("hibernate.connection.username", CFG.dbUsername());
-                    properties.put("hibernate.connection.password", CFG.dbPassword());
+                    properties.put("hibernate.connection.datasource", DataSources.dataSource(jdbcUrl));
 
                     properties.put("hibernate.session_factory.interceptor", new AssignedIdInterceptor());
 
                     return Persistence.createEntityManagerFactory(persistenceUnitName, properties);
                 }
         );
-
 
         return new ThreadSafeEntityManager(emf);
     }
