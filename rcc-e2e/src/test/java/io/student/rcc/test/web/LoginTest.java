@@ -3,13 +3,23 @@ package io.student.rcc.test.web;
 import com.codeborne.selenide.Selenide;
 import io.student.rcc.config.Config;
 import io.student.rcc.jupiter.annotation.User;
-import io.student.rcc.model.UserJson;
+import io.student.rcc.jupiter.extension.BrowserExtension;
+import io.student.rcc.jupiter.extension.MuseumExtension;
+import io.student.rcc.jupiter.extension.TestDataExtension;
+import io.student.rcc.jupiter.extension.UserExtension;
+import io.student.rcc.model.api.UserJson;
 import io.student.rcc.page.MainPage;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import static io.student.rcc.utils.DataGenerator.generateRandomLogin;
 import static io.student.rcc.utils.DataGenerator.generateRandomPassword;
+
+@ExtendWith(BrowserExtension.class)
+@ExtendWith(TestDataExtension.class)
+@ExtendWith(UserExtension.class)
+@ExtendWith(MuseumExtension.class)
 
 public class LoginTest {
     private static final Config CFG = Config.getInstance();
@@ -23,11 +33,15 @@ public class LoginTest {
     @User
     @Test
     void mainPageShouldBeDisplayedAfterSuccessLogin(UserJson user) {
-        Selenide.open(CFG.frontUrl(), MainPage.class)
-                .clickButtonSignIn()
-                .authentication(user.username(), user.password())
+        System.out.println(">>> ТИП КЛИЕНТА: " + System.getProperty("user.client.type", "DB"));
+        MainPage mainPage = Selenide.open(CFG.frontUrl(), MainPage.class);
+        mainPage
                 .checkMainPageContent()
-                .checkLoginVerification();
+                .header()
+                .clickEnterButton()
+                .authentication(user.username(), "12345")
+                .checkMainPageContent()
+                .checkUserIsLoggedIn();
     }
 
     @Test
@@ -35,10 +49,14 @@ public class LoginTest {
         String username = generateRandomLogin();
         String pass = generateRandomPassword();
 
-        Selenide.open(CFG.frontUrl(), MainPage.class)
-                .clickButtonSignIn()
+        MainPage mainPage = Selenide.open(CFG.frontUrl(), MainPage.class);
+        mainPage
+                .checkMainPageContent()
+                .header()
+                .clickEnterButton()
                 .incorrectAuthentication(username, pass)
                 .checkErrorLogin();
     }
+
 
 }
