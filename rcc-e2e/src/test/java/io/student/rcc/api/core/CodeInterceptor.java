@@ -37,7 +37,7 @@ public class CodeInterceptor implements Interceptor{
     @Nullable
     public static String getCodeAndClear() {
         String code = codeHolder.get();
-        codeHolder.remove()
+        codeHolder.remove();
         return code;
     }
 }
