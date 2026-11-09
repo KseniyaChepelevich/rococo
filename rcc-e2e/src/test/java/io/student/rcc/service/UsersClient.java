@@ -1,11 +1,20 @@
 package io.student.rcc.service;
 
-import io.student.rcc.model.UserJson;
+import io.student.rcc.model.api.UserJson;
+import io.student.rcc.service.impl.UsersDbClient;
+import jakarta.annotation.Nonnull;
 
 public interface UsersClient {
-    UserJson createUser(UserJson userJson);
+    static UsersClient getInstance() {
+        return new UsersDbClient();
+    }
 
-    void deleteUser(UserJson userJson);
+
+    @Nonnull
+    UserJson createUser(@Nonnull String username, @Nonnull String password);
+
+    @Nonnull
+    void delete(@Nonnull UserJson user);
 
 
 }

@@ -18,7 +18,7 @@ public record MuseumJson(UUID id, String title, String description, String photo
         new BytesAsString(entity.getPhoto()).string(),
         new GeoJson(
             entity.getCity(),
-            new CountryJson(
+                new CountryJson(
                 entity.getCountry().getId(),
                 entity.getCountry().getName()
             )
