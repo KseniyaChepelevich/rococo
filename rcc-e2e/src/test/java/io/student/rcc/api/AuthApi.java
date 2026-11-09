@@ -27,14 +27,14 @@ public interface AuthApi {
             @Query("response_type") String responseType,
             @Query("client_id") String clientId,
             @Query("scope") String scope,
-            @Query("redirect_uri") String redirectUri,
+            @Query(value = "redirect_uri", encoded = true) String redirectUri,
             @Query("code_challenge") String codeChallenge,
             @Query("code_challenge_method") String codeChallengeMethod
     );
 
     @GET("/login")
     @Nonnull
-    Call<ResponseBody> login();
+    Call<ResponseBody> getLoginForm();
 
     @FormUrlEncoded
     @POST("/login")
@@ -50,7 +50,7 @@ public interface AuthApi {
     @Nonnull
     Call<JsonNode> token(
             @Field("code") String code,
-            @Field("redirect_uri") String redirectUri,
+            @Field(value = "redirect_uri", encoded = true) String redirectUri,
             @Field("code_verifier") String codeVerifier,
             @Field("grant_type") String grantType,
             @Field("client_id") String clientId

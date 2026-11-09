@@ -1,12 +1,17 @@
 package io.student.rcc.api.core;
 
+import okhttp3.Cookie;
+import okhttp3.CookieJar;
+import okhttp3.HttpUrl;
+import org.jspecify.annotations.NonNull;
+
 import java.net.CookieManager;
 import java.net.CookieStore;
 import java.net.HttpCookie;
 import java.net.URI;
 import java.util.List;
 
-public enum ThreadSafeCookieStore implements CookieStore {
+public enum ThreadSafeCookieStore implements CookieStore, CookieJar {
     INSTANCE;
 
     private final ThreadLocal<CookieStore> threadLocalCookiesStore = ThreadLocal.withInitial(
@@ -59,5 +64,15 @@ public enum ThreadSafeCookieStore implements CookieStore {
 
     private CookieStore getStore() {
         return threadLocalCookiesStore.get();
+    }
+
+    @Override
+    public @NonNull List<Cookie> loadForRequest(@NonNull HttpUrl httpUrl) {
+        return List.of();
+    }
+
+    @Override
+    public void saveFromResponse(@NonNull HttpUrl httpUrl, @NonNull List<Cookie> list) {
+
     }
 }

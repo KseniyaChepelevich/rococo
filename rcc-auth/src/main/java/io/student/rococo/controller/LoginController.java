@@ -18,7 +18,7 @@ public class LoginController {
 
   private final String frontUri;
 
-  public LoginController(@Value("${rococo-front.base-uri") String frontUri) {
+  public LoginController(@Value("${rococo-front.base-uri}") String frontUri) {
     this.frontUri = frontUri;
   }
 
